@@ -17,6 +17,16 @@ cpanm Bundle::DadaMailXXL
 ```
 There currently isn't a public build script bundled with the Dada Mail distro. When that's created, one goal is to give you the choice of adding this perllib to the distro, installing Bundle::DadaMailXXL or to do nothing. 
 
+# TODO
+
+This entire perllib needs to be recreated. How? Probably figure out what all the Pure Perl modules are, and make a Bundle::DadaMailPurePerl out of that, then install those locally ala, ,
+
+```
+cpanm --force --local-lib ~/perllib Bundle::DadaMailPurePerl
+```
+
+clean that up a bit and then THAT's our new perlib to bundle with the Dada Mail distribution. 
+
 # See Also
 
 * Dada Mail 
