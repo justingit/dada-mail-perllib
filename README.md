@@ -24,3 +24,17 @@ https://dadamailproject.con
 
 * The Dada Mail Repository 
 https://github.com/justingit/dada-mail/
+
+* Bundle::DadaMail
+https://github.com/justingit/Bundle-DadaMail
+
+* Bundle::DadaMail on CPAN 
+https://metacpan.org/pod/Bundle::DadaMail
+
+* Bundle::DadaMailXXL
+https://github.com/justingit/Bundle-DadaMailXXL
+
+* Bundle::DadaMailXXL on CPAN 
+https://metacpan.org/pod/Bundle::DadaMailXXL
+
+
