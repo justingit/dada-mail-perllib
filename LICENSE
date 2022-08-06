@@ -1,0 +1,7 @@
+This distro holds code with many licenses, primarily: 
+
+http://www.perlfoundation.org/artistic_license_1_0
+
+http://www.gnu.org/licenses/gpl-2.0.html
+
+We do not explicitly set any specific license on this code (or copyright) unless specific to a module that we ourselves have written. 
