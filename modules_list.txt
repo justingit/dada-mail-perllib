@@ -1,5 +1,9 @@
 sudo cpanm --force --pureperl --local-lib-contained ~/testlocallib CGI
 
+Authen::SASL
+
+Best
+
 Bundle::libnet - I have questions... 
 
 CGI
@@ -14,11 +18,15 @@ Class::Accessor
 
 Class::Accessor::Chained::Fast
 
+Convert::UU
+
 Data::Google::Visualization::DataTable
 
 Data::Page
 
 Date::Format
+
+Digest::SHA::PurePerl
 
 Email::Address
 
@@ -32,9 +40,19 @@ File::Copy::Recursive - used in the installer
 
 File::Find::Rule - used for the Perl connector in KCFInder
 
+File::ReadBackwards
+
+File::Slurp - only used in Core5Filemanager - should be modified to not use 
+
 File::Slurper
 
+Google::reCAPTCHA::v3
+
 HTML::Entities::Numbered
+
+HTML::FillInForm::Lite
+
+HTML::FromText
 
 HTML::Tagset
 
@@ -95,8 +113,6 @@ URI::QueryParam - used by AWS::Signature4
 Crypt::CipherSaber
 
 MIME::Base64::Perl
-
-Authen::SASL
 
 YAML::Tiny
 
