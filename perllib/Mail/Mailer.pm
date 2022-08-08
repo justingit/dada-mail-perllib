@@ -1,20 +1,24 @@
-# Copyrights 1995-2011 by Mark Overmeer <perl@overmeer.net>.
+# Copyrights 1995-2019 by [Mark Overmeer <markov@cpan.org>].
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 2.00.
-use strict;
+# Pod stripped from pm file by OODoc 2.02.
+# This code is part of the bundle MailTools.  Meta-POD processed with
+# OODoc into POD and HTML manual-pages.  See README.md for Copyright.
+# Licensed under the same terms as Perl itself.
 
 package Mail::Mailer;
 use vars '$VERSION';
-$VERSION = '2.08';
+$VERSION = '2.21';
 
 use base 'IO::Handle';
 
+use strict;
 use POSIX qw/_exit/;
 
 use Carp;
 use Config;
 
+#--------------
 
 
 sub is_exe($);
@@ -37,7 +41,7 @@ our %Mailers = @Mailers;
 our $MailerType;
 our $MailerBinary;
 
-# does this really need to be done? or should a default mailer be specfied?
+# does this really need to be done? or should a default mailer be specified?
 
 $Mailers{sendmail} = 'sendmail'
     if $^O eq 'os2' && ! is_exe $Mailers{sendmail};
@@ -155,8 +159,9 @@ sub open($)
         }
     }
     else
-    {   $self->exec($exe, $args, \@to, $sender)
-            or die $!;
+    {   # Sending is handled by a subclass
+        $self->exec(undef, $args, \@to)
+            or die $!;    
     }
 
     $self->set_headers($hdrs);
@@ -211,5 +216,6 @@ sub close(@)
 
 sub DESTROY { shift->close }
 
+#--------------
 
 1;

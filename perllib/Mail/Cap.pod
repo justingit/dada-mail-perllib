@@ -1,14 +1,17 @@
+=encoding utf8
+
 =head1 NAME
 
-Mail::Cap - Parse mailcap files
+Mail::Cap - understand mailcap files
 
 =head1 SYNOPSIS
 
- my $mc = new Mail::Cap;
- $desc = $mc->description('image/gif');
+ my $mc   = Mail::Cap->new;
 
+ my $desc = $mc->description('image/gif');
  print "GIF desc: $desc\n";
- $cmd = $mc->viewCmd('text/plain; charset=iso-8859-1', 'file.txt');
+
+ my $cmd  = $mc->viewCmd('text/plain; charset=iso-8859-1', 'file.txt');
 
 =head1 DESCRIPTION
 
@@ -33,7 +36,7 @@ and therefore have succeeded the mail-cap specifications on modern
 
 =over 4
 
-=item Mail::Cap-E<gt>B<new>(OPTIONS)
+=item Mail::Cap-E<gt>B<new>(%options)
 
 Create and initialize a new Mail::Cap object.  If you give it an
 argument it will try to parse the specified file.  Without any
@@ -71,39 +74,39 @@ example:
 
 =head2 Run commands
 
-These methods invoke a suitable progam presenting or manipulating the
+These methods invoke a suitable program presenting or manipulating the
 media object in the specified file.  They all return C<1> if a command
 was found, and C<0> otherwise.  You might test C<$?> for the outcome
 of the command.
 
 =over 4
 
-=item $obj-E<gt>B<compose>(TYPE, FILE)
+=item $obj-E<gt>B<compose>($type, $file)
 
-=item $obj-E<gt>B<edit>(TYPE, FILE)
+=item $obj-E<gt>B<edit>($type, $file)
 
-=item $obj-E<gt>B<print>(TYPE, FILE)
+=item $obj-E<gt>B<print>($type, $file)
 
-=item $obj-E<gt>B<view>(TYPE, FILE)
+=item $obj-E<gt>B<view>($type, $file)
 
 =back
 
 =head2 Command creator
 
 These methods return a string that is suitable for feeding to system()
-in order to invoke a suitable progam presenting or manipulating the
+in order to invoke a suitable program presenting or manipulating the
 media object in the specified file.  It will return C<undef> if no
 suitable specification exists.
 
 =over 4
 
-=item $obj-E<gt>B<composeCmd>(TYPE, FILE)
+=item $obj-E<gt>B<composeCmd>($type, $file)
 
-=item $obj-E<gt>B<editCmd>(TYPE, FILE)
+=item $obj-E<gt>B<editCmd>($type, $file)
 
-=item $obj-E<gt>B<printCmd>(TYPE, FILE)
+=item $obj-E<gt>B<printCmd>($type, $file)
 
-=item $obj-E<gt>B<viewCmd>(TYPE, FILE)
+=item $obj-E<gt>B<viewCmd>($type, $file)
 
 =back
 
@@ -113,18 +116,18 @@ Methods return the corresponding mailcap field for the type.
 
 =over 4
 
-=item $obj-E<gt>B<description>(TYPE)
+=item $obj-E<gt>B<description>($type)
 
-=item $obj-E<gt>B<field>(TYPE, FIELD)
+=item $obj-E<gt>B<field>($type, $field)
 
 Returns the specified field for the type.  Returns undef if no
-specification exsists.
+specification exists.
 
-=item $obj-E<gt>B<nametemplate>(TYPE)
+=item $obj-E<gt>B<nametemplate>($type)
 
-=item $obj-E<gt>B<textualnewlines>(TYPE)
+=item $obj-E<gt>B<textualnewlines>($type)
 
-=item $obj-E<gt>B<x11_bitmap>(TYPE)
+=item $obj-E<gt>B<x11_bitmap>($type)
 
 =back
 
@@ -146,7 +149,7 @@ For other contributors see ChangeLog.
 =head1 LICENSE
 
 Copyrights 1995-2000 Graham Barr E<lt>gbarr@pobox.comE<gt> and
-2001-2007 Mark Overmeer E<lt>perl@overmeer.netE<gt>.
+2001-2017 Mark Overmeer E<lt>perl@overmeer.netE<gt>.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

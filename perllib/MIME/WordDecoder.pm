@@ -172,7 +172,7 @@ sub supported {
 
 I<Class method, constructor.>
 If \@HANDLERS is given, then @HANDLERS is passed to handler()
-to initiallize the internal map.
+to initialize the internal map.
 
 =cut
 
@@ -654,7 +654,7 @@ L<MIME::Tools>
 =head1 AUTHOR
 
 Eryq (F<eryq@zeegee.com>), ZeeGee Software Inc (F<http://www.zeegee.com>).
-David F. Skoll (dfs@roaringpenguin.com) http://www.roaringpenguin.com
+Dianne Skoll (dianne@skoll.ca)
 
 =cut
 

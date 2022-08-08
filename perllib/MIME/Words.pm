@@ -67,6 +67,7 @@ require 5.001;
 
 ### Pragmas:
 use strict;
+use re 'taint';
 use vars qw($VERSION @EXPORT_OK %EXPORT_TAGS @ISA);
 
 ### Exporting:
@@ -93,7 +94,7 @@ use MIME::QuotedPrint;
 #------------------------------
 
 ### The package version, both in 1.23 style *and* usable by MakeMaker:
-$VERSION = "5.502";
+$VERSION = "5.510";
 
 ### Nonprintables (controls + x7F + 8bit):
 my $NONPRINT = "\\x00-\\x1F\\x7F-\\xFF";
@@ -106,6 +107,7 @@ my $NONPRINT = "\\x00-\\x1F\\x7F-\\xFF";
 #     almost, but not exactly, quoted-printable.  :-P
 sub _decode_Q {
     my $str = shift;
+    local $1;
     $str =~ s/_/\x20/g;                                # RFC-1522, Q rule 2
     $str =~ s/=([\da-fA-F]{2})/pack("C", hex($1))/ge;  # RFC-1522, Q rule 1
     $str;
@@ -116,6 +118,7 @@ sub _decode_Q {
 #     almost, but not exactly, quoted-printable.  :-P
 sub _encode_Q {
     my $str = shift;
+    local $1;
     $str =~ s{([ _\?\=$NONPRINT])}{sprintf("=%02X", ord($1))}eog;
     $str;
 }
@@ -151,7 +154,7 @@ CHARSET of C<undef>.
 
     $enc = '=?ISO-8859-1?Q?Keld_J=F8rn_Simonsen?= <keld@dkuug.dk>';
     foreach (decode_mimewords($enc)) {
-        print "", ($_[1] || 'US-ASCII'), ": ", $_[0], "\n";
+        print "", ($_->[1] || 'US-ASCII'), ": ", $_->[0], "\n";
     }
 
 B<In a scalar context,> joins the "data" elements of the above
@@ -297,7 +300,8 @@ sub encode_mimewords {
     ###    We limit such words to 18 characters, to guarantee that the
     ###    worst-case encoding give us no more than 54 + ~10 < 75 characters
     my $word;
-    $rawstr =~ s{([ a-zA-Z0-9\x7F-\xFF]{1,18})}{     ### get next "word"
+    local $1;
+    $rawstr =~ s{([a-zA-Z0-9\x7F-\xFF]+\s*)}{     ### get next "word"
 	$word = $1;
 	(($word !~ /(?:[$NONPRINT])|(?:^\s+$)/o)
 	 ? $word                                          ### no unsafe chars
@@ -334,7 +338,7 @@ MIME::Base64 and MIME::QuotedPrint.
 =head1 AUTHOR
 
 Eryq (F<eryq@zeegee.com>), ZeeGee Software Inc (F<http://www.zeegee.com>).
-David F. Skoll (dfs@roaringpenguin.com) http://www.roaringpenguin.com
+Dianne Skoll (dianne@skoll.ca)
 
 All rights reserved.  This program is free software; you can redistribute
 it and/or modify it under the same terms as Perl itself.

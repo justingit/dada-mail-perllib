@@ -42,7 +42,7 @@ use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = '1.527';
+our $VERSION = '1.543';
 $VERSION = eval $VERSION;
 
 use MIME::Parser;
@@ -93,7 +93,7 @@ my @Preprocessors = qw(
   my $bounce = Mail::DeliveryStatus::BounceParser->parse($message, \%arg);
 
 OPTIONS.  If you pass BounceParser->new(..., {log=>sub { ... }}) That will be
-used as a logging callback.
+used as a logging callback. If C<< $message >> is undefined, will parse STDIN.
 
 NON-BOUNCES.  If the message is recognizably a vacation autoresponse, or is a
 report of a transient nonfatal error, or a spam or virus autoresponse, you'll
@@ -101,7 +101,7 @@ still get back a C<$bounce>, but its C<< $bounce->is_bounce() >> will return
 false.
 
 It is possible that some bounces are not really bounces; such as
-anything that apears to have a 2XX status code.  To include such
+anything that appears to have a 2XX status code.  To include such
 non-bounces in the reports, pass the option {report_non_bounces=>1}.
 
 For historical reasons, C<new> is an alias for the C<parse> method.
@@ -120,7 +120,7 @@ sub parse {
   my $message;
 
   if (not $data) {
-    print STDERR "BounceParser: expecting bounce mesage on STDIN\n" if -t STDIN;
+    print STDERR "BounceParser: expecting bounce message on STDIN\n" if -t STDIN;
     $message = $parser->parse(\*STDIN);
   } elsif (not ref $data)        {
     $message = $parser->parse_data($data);
@@ -407,7 +407,7 @@ sub parse {
       # added the following line as part of fix for #41874
       $para =~ s/\r/ /g;
 
-      my $report = Mail::Header->new([split /\n/, $para]);
+      my $report = Mail::DeliveryStatus::Report->new([split /\n/, $para]);
 
       # Removed a $report->combine here - doesn't seem to work without a tag
       # anyway... not sure what that was for. - wby 20060823
@@ -432,7 +432,7 @@ sub parse {
             $seen_action_failed   = 1;
           } else {
             $self->log("message/delivery-status says 'Action: \L$1'");
-            $self->{type} = 'delivery-status \L$1';
+            $self->{type} = "delivery-status \L$1";
             $self->{is_bounce} = 0;
             return $self;
           }
@@ -477,7 +477,10 @@ sub parse {
         $report->delete("reason");
       }
 
-      if (my $status = $report->get('Status')) {
+      my $status = $report->get('Status');
+      $report->replace(Status => $status) if $status =~ s/ \(permanent failure\)$//;
+
+      if ($status) {
         # RFC 1893... prefer Status: if it exists and is something we know
         # about
         # Not 100% sure about 5.1.0...
@@ -485,12 +488,11 @@ sub parse {
           $report->replace(std_reason => "user_unknown");
         } elsif ($status eq "5.1.2") {
           $report->replace(std_reason => "domain_error");
+        } elsif ($status eq "5.2.1") {
+          $report->replace(std_reason => "user_disabled");
         } elsif ($status eq "5.2.2") {
           $report->replace(std_reason => "over_quota");
-          # this fits my reading of RFC 3463
-          # FIXME: I suspect there's something wrong with the parsing earlier
-          # that this has to be a regexp rather than a straight comparison
-        } elsif ($status =~ /^5\.4\.4/) {
+        } elsif ($status eq "5.4.4") {
           $report->replace(std_reason => "domain_error");
         } else {
           $report->replace(
@@ -516,6 +518,10 @@ sub parse {
       if (defined $diag_code) {
         ($code) = $diag_code =~
          m/ ( ( [245] \d{2} ) \s | \s ( [245] \d{2} ) (?!\.) ) /x;
+      }
+
+      if (!$code && $status && $status =~ /\A([245])\.?([0-9])\.?([0-9])/) {
+          $code = "$1$2$3";
       }
 
       if ($code) {
@@ -584,7 +590,7 @@ sub parse {
     # We may have to specifically allow some other types, but in my testing, all
     # the messages that get here and are actual bounces are text/plain
     # wby - 20060907
-    
+
     # they usually say "returned message" somewhere, and we can split on that,
     # above and below.
     my $body_string = $message->bodyhandle->as_string || '';
@@ -686,6 +692,7 @@ sub _extract_reports {
     my $reason = $split[$i-1];
     $reason =~ s/(.*?). (Your mail to the following recipients could not be delivered)/$2/;
 
+	$self->log("extracted a reason [$reason]");
     $by_email{$email} = {
       email => $email,
       raw   => join ("", @split[$i-1..$i+1]),
@@ -698,6 +705,7 @@ sub _extract_reports {
 
   foreach my $email (keys %by_email) {
     my $report = Mail::DeliveryStatus::Report->new();
+	$report->modify(1);
     $report->header_hashref($by_email{$email});
     push @toreturn, $report;
   }
@@ -758,6 +766,7 @@ standardized reasons:
 
   user_unknown
   over_quota
+  user_disabled
   domain_error
   spam
   message_too_large
@@ -939,9 +948,9 @@ sub _std_reason {
     /\s#?5\.2\.2\s/     or                                # rfc 1893
     /User\s+mailbox\s+exceeds\s+allowed\s+size/i or
     /Mailbox\s+size\s+limit\s+exceeded/i or
-    /message\s+size\s+\d+\s+exceeds\s+size\s+limit\s+\d+/i or
     /max\s+message\s+size\s+exceeded/i or
-	/Benutzer\s+hat\s+zuviele\s+Mails\s+auf\s+dem\s+Server/i 
+	/Benutzer\s+hat\s+zuviele\s+Mails\s+auf\s+dem\s+Server/i or
+	/exceeded\s+its\s+disk\s+space\s+limit/i
   ) {
     return "over_quota";
   }
@@ -991,7 +1000,9 @@ sub _std_reason {
 	/No\s+mail\s+box\s+available\s+for\s+this\s+user/i or
 	/User\s+\[\S+\]\s+does\s+not\s+exist/i or
 	/email\s+account\s+that\s+you\s+tried\s+to\s+reach\s+is\s+disabled/i or
-	/not\s+an\s+active\s+address\s+at\s+this\s+host/i
+	/not\s+an\s+active\s+address\s+at\s+this\s+host/i or
+	/not\s+a\s+known\s+user/i or
+	/BAD_RECIPIENT/i
   ) {
     return "user_unknown";
   }
@@ -1026,16 +1037,49 @@ sub _std_reason {
     /Message\s+looks\s+like\s+spam/i or
 	/Message\s+content\s+rejected,\s+UBE/i or
 	/Blocked\s+using\s+spam\s+pattern/i or
+	/Client\s+host\s+\S+\s+blocked\s+using/i or
 	/breaches\s+local\s+URIBL\s+policy/i or
 	/Your\s+email\s+had\s+spam-like\s+header\s+contents/i or
 	/detected\s+as\s+spam/i or
-	/Denied\s+due\s+to\s+spam\s+list/i
+	/Denied\s+due\s+to\s+spam\s+list/i or
+	/appears\s+to\s+be\s+unsolicited/i or
+	/antispam\s+checks/i or
+	/Probable\s+Spam/i or
+	/ESETS_SMTP\s+\(spam\)/i or
+	/this\s+message\s+appears\s+to\s+be\s+spam/i or
+	/Spam\s+score\s+\(\S+\)\s+too\s+high/i or
+	/matches\s+a\s+profile\s+the\s+Internet\s+community\s+may\s+consider\s+spam/i or
+	/accepted\s+due\s+to\s+spam\s+filter/i or
+	/content\s+filter\s+rejection/i or
+	/using\s+a\s+mass\s+mailer/i or
+	/Spam\s+email/i or
+	/Spam\s+content/i or
+	(/CONTENT\s+REJECT/i and /dspam\s+check/i) or
+	/this\s+email\s+is\s+spam/i or
+	/rejected\s+as\s+spam/i or
+	/MCSpamSignature/i or
+	/identified\s+as\s+spam/i or
+	/Spamming\s+not\s+allowed/i or
+	/classified\s+as\s+spam/i or
+    /Message\s+refused\s+by\s+MailMarshal\s+SpamProfiler/i or
+	/Your\s+email\s+appears\s+similar\s+to\s+spam/i or
+	/This\s+message\s+scored\s+\S+\s+spam\s+points\s+and\s+has\s+been\s+rejected/i or
+	/Spam\s+Blocked/i or
+	/bulk\s+e?mail/i or
+	/probably\s+spam/i or
+	/appears\s+to\s+be\s+SPAM/i or
+    /SPAM NOT ACCEPTED/i or
+	/5.9.8\s+spam/i
   ) {
     return "spam";
   }
 
   if (
-    /RESOLVER.RST.RecipSizeLimit/i
+    /RESOLVER.RST.RecipSizeLimit/i or
+	/exceeds\s+size\s+limit/i or
+	/Message\s+too\s+big/i or
+	/RESOLVER.RST.SendSizeLimit/i or
+	/Message\s+Rejected\s+Class=size/i
   ) {
     return "message_too_large";
   }
@@ -1270,7 +1314,7 @@ sub _construct_diagnostic_code {
   "Diagnostic-Code: X-BounceParser;",
   ($by_email{$email}->{'host'} ? "host $by_email{$email}->{'host'} said:" : ()),
   ($by_email{$email}->{'smtp_code'}),
-  (join ", ", @{ $by_email{$email}->{'errors'} }));
+  (join ", ", @{ $by_email{$email}->{'errors'} || [] }));
 }
 
 sub _analyze_smtp_transcripts {
@@ -1283,7 +1327,7 @@ sub _analyze_smtp_transcripts {
   for (split /\n\n|(?=>>>)/, $plain_smtp_transcript) {
     $email = _cleanup_email($1) if /RCPT TO:\s*(\S+)/im;
 
-    if (/The\s+following\s+addresses\s+had\s+permanent\s+fatal\s+errors\s+-----\s+\<(.*)\>/im) {
+    if (/The\s+following\s+addresses\s+had\s+permanent\s+fatal\s+errors\s+-----\s+\<?(.*)\>?/im) {
       $email = _cleanup_email($1);
     }
 

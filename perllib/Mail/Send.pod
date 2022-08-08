@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head1 NAME
 
 Mail::Send - Simple electronic mail interface
@@ -34,9 +36,10 @@ Mail::Send - Simple electronic mail interface
 
 L<Mail::Send|Mail::Send> creates e-mail messages without using the L<Mail::Header|Mail::Header>
 knowledge, which means that all escaping and folding must be done by
-you!  Simplicity has its price.
+you!  Also: do not forget to escape leading dots.  Simplicity has its price.
 
-When you have time, take a look at Mail::Transport
+When you have time, take a look at Mail::Transport which is part of
+the MailBox suite.
 
 =head1 METHODS
 
@@ -46,8 +49,9 @@ When you have time, take a look at Mail::Transport
 
 =item Mail::Send-E<gt>B<new>(PAIRS)
 
-A list of header fields (provided as key-value PAIRS) can be
-used to initialize the object.
+A list of header fields (provided as key-value PAIRS) can be used to
+initialize the object, limited to the few provided as method: C<to>,
+C<subject>, C<cc>, and C<bcc>.  For other header fields, use L<add()|Mail::Send/"Header fields">.
 
 =back
 
@@ -55,24 +59,24 @@ used to initialize the object.
 
 =over 4
 
-=item $obj-E<gt>B<add>(FIELDNAME, VALUES)
+=item $obj-E<gt>B<add>($fieldname, @values)
 
-Add values to the list of defined values for the FIELDNAME.
+Add values to the list of defined values for the $fieldname.
 
-=item $obj-E<gt>B<bcc>(VALUES)
+=item $obj-E<gt>B<bcc>(@values)
 
-=item $obj-E<gt>B<cc>(VALUES)
+=item $obj-E<gt>B<cc>(@values)
 
-=item $obj-E<gt>B<delete>(FIELDNAME)
+=item $obj-E<gt>B<delete>($fieldname)
 
-=item $obj-E<gt>B<set>(FIELDNAME, VALUES)
+=item $obj-E<gt>B<set>($fieldname, @values)
 
-VALUES will replace the old values for the FIELDNAME.  Returned is
+The @values will replace the old values for the $fieldname.  Returned is
 the LIST of values after modification.
 
-=item $obj-E<gt>B<subject>(VALUES)
+=item $obj-E<gt>B<subject>(@values)
 
-=item $obj-E<gt>B<to>(VALUES)
+=item $obj-E<gt>B<to>(@values)
 
 =back
 
@@ -80,11 +84,14 @@ the LIST of values after modification.
 
 =over 4
 
-=item $obj-E<gt>B<open>(OPTIONS)
+=item $obj-E<gt>B<open>(%options)
 
-The OPTIONS are used to initiate a mailer object via
+The %options are used to initiate a mailer object via
 L<Mail::Mailer::new()|Mail::Mailer/"Constructors">.  Then L<Mail::Mailer::open()|Mail::Mailer/"Constructors"> is called
-with the knowledge collected in this Mail::Send object.
+with the knowledge collected in this C<Mail::Send> object.
+
+Be warned: this module implements raw smtp, which means that you have
+to escape lines which start with a dot, by adding one in front.
 
 =back
 
@@ -106,7 +113,7 @@ For other contributors see ChangeLog.
 =head1 LICENSE
 
 Copyrights 1995-2000 Graham Barr E<lt>gbarr@pobox.comE<gt> and
-2001-2007 Mark Overmeer E<lt>perl@overmeer.netE<gt>.
+2001-2017 Mark Overmeer E<lt>perl@overmeer.netE<gt>.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

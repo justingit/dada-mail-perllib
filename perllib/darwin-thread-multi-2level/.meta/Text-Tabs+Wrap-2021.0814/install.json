@@ -1,0 +1,1 @@
+{"target":"Text::Wrap","dist":"Text-Tabs+Wrap-2021.0814","pathname":"A/AR/ARISTOTLE/Text-Tabs+Wrap-2021.0814.tar.gz","provides":{"Text::Tabs":{"version":"2021.0814","file":"lib.modern/Text/Tabs.pm"},"Text::Wrap":{"file":"lib.modern/Text/Wrap.pm","version":"2021.0814"}},"name":"Text::Wrap","version":"2021.0814"}

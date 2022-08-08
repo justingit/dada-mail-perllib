@@ -1,0 +1,84 @@
+{
+   "abstract" : "Tools for working with paths and file specs across platforms",
+   "author" : [
+      "Maintained by Ken Williams <KWILLIAMS@cpan.org>"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "Module::Build version 0.4231",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : 2
+   },
+   "name" : "PathTools",
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "ExtUtils::CBuilder" : 0,
+            "File::Path" : 0,
+            "Module::Build" : "0.19",
+            "Scalar::Util" : 0,
+            "Test" : 0
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "Carp" : 0,
+            "File::Basename" : 0,
+            "perl" : 5.005
+         }
+      }
+   },
+   "provides" : {
+      "Cwd" : {
+         "file" : "Cwd.pm",
+         "version" : "3.26"
+      },
+      "File::Spec" : {
+         "file" : "lib/File/Spec.pm",
+         "version" : "3.26"
+      },
+      "File::Spec::Cygwin" : {
+         "file" : "lib/File/Spec/Cygwin.pm",
+         "version" : "3.26"
+      },
+      "File::Spec::Epoc" : {
+         "file" : "lib/File/Spec/Epoc.pm",
+         "version" : "3.26"
+      },
+      "File::Spec::Functions" : {
+         "file" : "lib/File/Spec/Functions.pm",
+         "version" : "3.26"
+      },
+      "File::Spec::Mac" : {
+         "file" : "lib/File/Spec/Mac.pm",
+         "version" : "3.26"
+      },
+      "File::Spec::OS2" : {
+         "file" : "lib/File/Spec/OS2.pm",
+         "version" : "3.26"
+      },
+      "File::Spec::Unix" : {
+         "file" : "lib/File/Spec/Unix.pm",
+         "version" : "3.26"
+      },
+      "File::Spec::VMS" : {
+         "file" : "lib/File/Spec/VMS.pm",
+         "version" : "3.26"
+      },
+      "File::Spec::Win32" : {
+         "file" : "lib/File/Spec/Win32.pm",
+         "version" : "3.26"
+      }
+   },
+   "release_status" : "stable",
+   "resources" : {
+      "license" : [
+         "http://dev.perl.org/licenses/"
+      ]
+   },
+   "version" : "3.26",
+   "x_serialization_backend" : "JSON::PP version 4.11"
+}

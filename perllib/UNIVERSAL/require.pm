@@ -1,5 +1,5 @@
 package UNIVERSAL::require;
-$UNIVERSAL::require::VERSION = '0.13';
+$UNIVERSAL::require::VERSION = '0.19';
 
 # We do this because UNIVERSAL.pm uses CORE::require().  We're going
 # to put our own require() into UNIVERSAL and that makes an ambiguity.
@@ -8,16 +8,21 @@ BEGIN { require UNIVERSAL }
 
 package UNIVERSAL;
 
+use 5.006;
 use strict;
+use warnings;
+use Carp;
 
-use vars qw($Level);
-$Level = 0;
+# regexp for valid module name. Lifted from Module::Runtime
+my $module_name_rx = qr/[A-Z_a-z][0-9A-Z_a-z]*(?:::[0-9A-Z_a-z]+)*/;
+
+our $Level = 0;
 
 =pod
 
 =head1 NAME
 
-UNIVERSAL::require - require() modules from a variable
+UNIVERSAL::require - require() modules from a variable [deprecated]
 
 =head1 SYNOPSIS
 
@@ -34,6 +39,12 @@ UNIVERSAL::require - require() modules from a variable
 
 =head1 DESCRIPTION
 
+Before using this module, you should look at the alternatives,
+some of which are listed in SEE ALSO below.
+
+This module provides a safe mechanism for loading a module at runtime,
+when you have the name of the module in a variable.
+
 If you've ever had to do this...
 
     eval "require $module";
@@ -45,7 +56,7 @@ arcane eval() work, you can do this:
 
     $module->require;
 
-It doesn't save you much typing, but it'll make alot more sense to
+It doesn't save you much typing, but it'll make a lot more sense to
 someone who's not a ninth level Perl acolyte.
 
 =head1 Methods
@@ -73,10 +84,12 @@ sub require {
 
     $UNIVERSAL::require::ERROR = '';
 
-    die("UNIVERSAL::require() can only be run as a class method")
+    croak("UNIVERSAL::require() can only be run as a class method")
       if ref $module; 
 
-    die("UNIVERSAL::require() takes no or one arguments") if @_ > 2;
+    croak("invalid module name '$module'") if $module !~ /\A$module_name_rx\z/;
+
+    croak("UNIVERSAL::require() takes no or one arguments") if @_ > 2;
 
     my($call_package, $call_file, $call_line) = caller($Level);
 
@@ -181,10 +194,27 @@ See F<http://www.perl.com/perl/misc/Artistic.html>
 
 Michael G Schwern <schwern@pobox.com>
 
+Now maintained by Neil Bowers (NEILB).
 
 =head1 SEE ALSO
 
-L<Module::Load>,  L<perlfunc/require>, L<http://dev.perl.org/rfc/253.pod>
+L<Module::Load> provides functions for loading code,
+and importing functions.
+It's actively maintained.
+
+L<Module::Runtime> provides a number of usesful functions
+for require'ing and use'ing modules,
+and associated operations.
+
+L<Mojo::Loader> is a class loader and plugin framework.
+L<Module::Loader> is a stand-alone module that was inspired
+by C<Mojo::Loader>.
+
+There are many other modules that may be of interest on CPAN.
+An old review of some of them can be read at
+L<https://neilb.org/reviews/module-loading.html>.
+
+L<perlfunc/require>.
 
 =cut
 

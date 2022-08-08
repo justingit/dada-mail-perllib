@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head1 NAME
 
 Mail::Field::Generic - implementation for inspecific fields
@@ -20,31 +22,39 @@ implementation. This is fine for fields like C<Subject>, C<X-Mailer>,
 etc., where the field holds only a string of no particular
 importance/format.
 
+Extends L<"DESCRIPTION" in Mail::Field|Mail::Field/"DESCRIPTION">.
+ 
 =head1 METHODS
 
+Extends L<"METHODS" in Mail::Field|Mail::Field/"METHODS">.
+ 
 =head2 Constructors
 
+Extends L<"Constructors" in Mail::Field|Mail::Field/"Constructors">.
+ 
 =over 4
 
-=item Mail::Field::Generic-E<gt>B<combine>(FIELDS)
+=item Mail::Field::Generic-E<gt>B<combine>($fields)
 
-See L<Mail::Field/"Constructors">
+Inherited, see L<Mail::Field/"Constructors">
 
-=item Mail::Field::Generic-E<gt>B<extract>(TAG, HEAD [, INDEX ])
+=item Mail::Field::Generic-E<gt>B<extract>( $tag, $head [, $index ] )
 
-See L<Mail::Field/"Constructors">
+Inherited, see L<Mail::Field/"Constructors">
 
-=item Mail::Field::Generic-E<gt>B<new>(TAG [, STRING | OPTIONS])
+=item Mail::Field::Generic-E<gt>B<new>( $tag [, STRING | %options] )
 
-See L<Mail::Field/"Constructors">
+Inherited, see L<Mail::Field/"Constructors">
 
 =back
 
 =head2 "Fake" constructors
 
+Extends L<""Fake" constructors" in Mail::Field|Mail::Field/""Fake" constructors">.
+ 
 =over 4
 
-=item $obj-E<gt>B<create>(OPTIONS)
+=item $obj-E<gt>B<create>(%options)
 
  -Option--Default
   Text    ''
@@ -55,7 +65,7 @@ See L<Mail::Field/"Constructors">
 
 =back
 
-=item $obj-E<gt>B<parse>([STRING])
+=item $obj-E<gt>B<parse>( [STRING] )
 
 Set the new text, which is empty when no STRING is provided.
 
@@ -63,34 +73,42 @@ Set the new text, which is empty when no STRING is provided.
 
 =head2 Accessors
 
+Extends L<"Accessors" in Mail::Field|Mail::Field/"Accessors">.
+ 
 =over 4
 
-=item $obj-E<gt>B<set>(OPTIONS)
+=item $obj-E<gt>B<set>(%options)
 
-See L<Mail::Field/"Accessors">
+Inherited, see L<Mail::Field/"Accessors">
 
-=item $obj-E<gt>B<stringify>
+=item $obj-E<gt>B<stringify>()
 
-See L<Mail::Field/"Accessors">
+Inherited, see L<Mail::Field/"Accessors">
 
-=item $obj-E<gt>B<tag>
+=item $obj-E<gt>B<tag>()
 
-=item Mail::Field::Generic-E<gt>B<tag>
+=item Mail::Field::Generic-E<gt>B<tag>()
 
-See L<Mail::Field/"Accessors">
+Inherited, see L<Mail::Field/"Accessors">
 
 =back
 
 =head2 Smart accessors
 
+Extends L<"Smart accessors" in Mail::Field|Mail::Field/"Smart accessors">.
+ 
 =over 4
 
-=item $obj-E<gt>B<text>([STRING])
+=item $obj-E<gt>B<text>( [STRING] )
 
-See L<Mail::Field/"Smart accessors">
+Inherited, see L<Mail::Field/"Smart accessors">
 
 =back
 
+=head1 DETAILS
+
+Extends L<"DETAILS" in Mail::Field|Mail::Field/"DETAILS">.
+ 
 =head1 DIAGNOSTICS
 
 =over 4
@@ -98,7 +116,7 @@ See L<Mail::Field/"Smart accessors">
 =item Error: Undefined subroutine <method> called
 
 Mail::Field objects use autoloading to compile new functionality.
-Apparently, the mehod called is not implemented for the specific
+Apparently, the method called is not implemented for the specific
 class of the field object.
 
 =back
@@ -121,7 +139,7 @@ For other contributors see ChangeLog.
 =head1 LICENSE
 
 Copyrights 1995-2000 Graham Barr E<lt>gbarr@pobox.comE<gt> and
-2001-2007 Mark Overmeer E<lt>perl@overmeer.netE<gt>.
+2001-2017 Mark Overmeer E<lt>perl@overmeer.netE<gt>.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

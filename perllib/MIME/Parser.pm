@@ -153,7 +153,7 @@ use MIME::Parser::Results;
 #------------------------------
 
 ### The package version, both in 1.23 style *and* usable by MakeMaker:
-$VERSION = "5.502";
+$VERSION = "5.510";
 
 ### How to catenate:
 $CAT = '/bin/cat';
@@ -636,6 +636,10 @@ sub process_header {
     ($hdr_rdr->eos_type eq 'DONE') or
 	$self->error("unexpected end of header\n");
 
+
+    ### If header line begins with a UTF-8 Byte-Order mark, remove it.
+    $headstr =~ s/^\x{EF}\x{BB}\x{BF}//;
+
     ### Extract the header (note that zero-size headers are admissible!):
     open(my $readfh, '<:scalar', \$headstr) or die $!;
     $head->read( $readfh );
@@ -1042,7 +1046,7 @@ sub process_part {
     }
     elsif (("$type/$subtype" eq "message/rfc822" ||
 	    "$type/$subtype" eq "message/external-body" ||
-	    ("$type/$subtype" eq "message/partial" && $head->mime_attr("content-type.number") == 1)) &&
+	    ("$type/$subtype" eq "message/partial" && defined($head->mime_attr("content-type.number")) && $head->mime_attr("content-type.number") == 1)) &&
 	    $self->extract_nested_messages) {
 	$self->debug("attempting to process a nested message");
 	return undef unless defined($self->process_message($in, $rdr, $ent));
@@ -1109,6 +1113,10 @@ Returns the parsed MIME::Entity on success.
 sub parse_data {
     my ($self, $data) = @_;
 
+    if (!defined($data)) {
+	    croak "parse_data: No data passed";
+    }
+
     ### Get data as a scalar:
     my $io;
 
@@ -1118,12 +1126,16 @@ sub parse_data {
         $io = IO::File->new($data, '<:');
     } elsif( ref $data eq 'ARRAY' ) {
 	# Passing arrays is deprecated now that we've nuked IO::ScalarArray
-	# but for backwards compatability we still support it by joining the
+	# but for backwards compatibility we still support it by joining the
 	# array lines to a scalar and doing scalar IO on it.
 	my $tmp_data = join('', @$data);
 	$io = IO::File->new(\$tmp_data, '<:');
     } else {
         croak "parse_data: wrong argument ref type: ", ref($data);
+    }
+
+    if (!$io) {
+	    croak "parse_data: unable to open in-memory file handle";
     }
 
     ### Parse!
@@ -1153,6 +1165,7 @@ sub parse {
     my $entity;
     local $/ = "\n";    ### just to be safe
 
+    local $\ = undef; # CPAN ticket #71041
     $self->init_parse;
     $entity = $self->process_part($in, undef);  ### parse!
 
@@ -1790,7 +1803,7 @@ Optimum settings:
 
 B<Native I/O is much faster than object-oriented I/O.>
 It's much faster to use E<lt>$fooE<gt> than $foo-E<gt>getline.
-For backwards compatibilty, this module must continue to use
+For backwards compatibility, this module must continue to use
 object-oriented I/O in most places, but if you use L<parse()|/parse>
 with a "real" filehandle (string, globref, or subclass of IO::File)
 then MIME::Parser is able to perform some crucial optimizations.
@@ -1902,11 +1915,11 @@ object; you'll never see it, and should never need to worry about it.
 
 Some folks have asked for the ability to bypass this temp-file
 mechanism, I suppose because they assume it would slow down their application.
-I considered accomodating this wish, but the temp-file
+I considered accommodating this wish, but the temp-file
 approach solves a lot of thorny problems in parsing, and it also
 protects against hidden bugs in user applications (what if you've
 directed the encoded part into a scalar, and someone unexpectedly
-sends you a 6 MB tar file?).  Finally, I'm just not conviced that
+sends you a 6 MB tar file?).  Finally, I'm just not convinced that
 the temp-file use adds significant overhead.
 
 
@@ -1992,7 +2005,7 @@ L<MIME::Tools>, L<MIME::Head>, L<MIME::Body>, L<MIME::Entity>, L<MIME::Decoder>
 =head1 AUTHOR
 
 Eryq (F<eryq@zeegee.com>), ZeeGee Software Inc (F<http://www.zeegee.com>).
-David F. Skoll (dfs@roaringpenguin.com) http://www.roaringpenguin.com
+Dianne Skoll (dianne@skoll.ca)
 
 All rights reserved.  This program is free software; you can redistribute
 it and/or modify it under the same terms as Perl itself.

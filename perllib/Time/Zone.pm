@@ -20,7 +20,7 @@ Time::Zone -- miscellaneous timezone manipulations routines
 This is a collection of miscellaneous timezone manipulation routines.
 
 C<tz2zone()> parses the TZ environment variable and returns a timezone
-string suitable for inclusion in L<date>-like output.  It opionally takes
+string suitable for inclusion in L<date(1)>-like output.  It opionally takes
 a timezone string, a time, and a is-dst flag.
 
 C<tz_local_offset()> determins the offset from GMT time in seconds.  It
@@ -48,7 +48,7 @@ use vars qw(@ISA @EXPORT $VERSION @tz_local);
 
 @ISA = qw(Exporter);
 @EXPORT = qw(tz2zone tz_local_offset tz_offset tz_name);
-$VERSION = "2.22";
+$VERSION = "2.24";
 
 # Parts stolen from code by Paul Foley <paul@ascent.com>
 
@@ -156,17 +156,21 @@ CONFIG: {
 	    "cdt"  =>   -5*3600,  	 # Central Daylight
 	    "mdt"  =>   -6*3600,  	 # Mountain Daylight
 	    "pdt"  =>   -7*3600,  	 # Pacific Daylight
+	    "akdt" =>   -8*3600,         # Alaska Daylight
 	    "ydt"  =>   -8*3600,  	 # Yukon Daylight
 	    "hdt"  =>   -9*3600,  	 # Hawaii Daylight
 	    "bst"  =>   +1*3600,  	 # British Summer   
 	    "mest" =>   +2*3600,  	 # Middle European Summer   
+	    "metdst" => +2*3600, 	 # Middle European DST
 	    "sst"  =>   +2*3600,  	 # Swedish Summer
 	    "fst"  =>   +2*3600,  	 # French Summer
             "cest" =>   +2*3600,         # Central European Daylight
             "eest" =>   +3*3600,         # Eastern European Summer
+            "msd"  =>   +4*3600,         # Moscow Daylight
 	    "wadt" =>   +8*3600,  	 # West Australian Daylight
 	    "kdt"  =>  +10*3600,	 # Korean Daylight
 	#   "cadt" =>  +10*3600+1800,	 # Central Australian Daylight
+	    "aedt" =>  +11*3600,  	 # Eastern Australian Daylight
 	    "eadt" =>  +11*3600,  	 # Eastern Australian Daylight
 	    "nzd"  =>  +13*3600,  	 # New Zealand Daylight   
 	    "nzdt" =>  +13*3600,  	 # New Zealand Daylight   
@@ -194,6 +198,7 @@ CONFIG: {
 	    "cst"       =>  -6*3600,	 # Central Standard
 	    "mst"       =>  -7*3600,	 # Mountain Standard
 	    "pst"       =>  -8*3600,	 # Pacific Standard
+	    "akst"      =>  -9*3600,     # Alaska Standard
 	    "yst"	=>  -9*3600,	 # Yukon Standard
 	    "hst"	=> -10*3600,	 # Hawaii Standard
 	    "cat"	=> -10*3600,	 # Central Alaska
@@ -211,6 +216,7 @@ CONFIG: {
 	    "eet"	=>  +2*3600, 	 # Eastern Europe, USSR Zone 1
 	    "ukr"	=>  +2*3600, 	 # Ukraine
 	    "bt"	=>  +3*3600, 	 # Baghdad, USSR Zone 2
+            "msk"       =>  +3*3600,     # Moscow
 	#   "it"	=>  +3*3600+1800,# Iran
 	    "zp4"	=>  +4*3600, 	 # USSR Zone 3
 	    "zp5"	=>  +5*3600, 	 # USSR Zone 4
@@ -226,6 +232,7 @@ CONFIG: {
 	    "jst"	=>  +9*3600,	 # Japan Standard, USSR Zone 8
 	    "kst"	=>  +9*3600,	 # Korean Standard
 	#   "cast"	=>  +9*3600+1800,# Central Australian Standard
+	    "aest"	=> +10*3600,	 # Eastern Australian Standard
 	    "east"	=> +10*3600,	 # Eastern Australian Standard
 	    "gst"	=> +10*3600,	 # Guam Standard, USSR Zone 9
 	    "nzt"	=> +12*3600,	 # New Zealand

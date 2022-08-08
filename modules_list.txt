@@ -1,4 +1,7 @@
-sudo cpanm --force --pureperl --local-lib-contained ~/testlocallib CGI
+W sudo cpanm --force --pureperl --local-lib-contained ~/testlocallib CGI
+
+# remove, darwin-thread-multi-2level
+
 
 Authen::SASL
 
@@ -8,33 +11,43 @@ Bundle::libnet - I have questions...
 
 CGI
 
+CGI::Carp
+
 CGI::Application
+
+CGI::Application::Plugin::RateLimit
 
 CGI::Session
 
 CGI::Session::ExpireSessions
 
-Class::Accessor
+Class::Accessor  - prereq to something
 
-Class::Accessor::Chained::Fast
+Class::Accessor::Chained::Fast - prereq to something
 
 Convert::UU
 
+Crypt::CipherSaber
+
 Data::Google::Visualization::DataTable
 
-Data::Page
+Data::Page - prereq to DataPageset
 
-Date::Format
+Date::Format - prereq to something
 
-Digest::SHA::PurePerl
+DataPageset
+
+Digest::SHA::PurePerl - weird 'cause Digest::SHA is core
 
 Email::Address
 
-Email::Find
+Email::Find - pulls in Net::DNS :|
 
-Email::Valid
+# Email::Valid  - doesn't work with v5.10.1
 
-Exporter::Lite
+RJBS/Email-Valid-1.202.tar.gz # This does work with 5.10.1 - This isn't something we need to deal with in the CPAN Bundle tho
+
+Exporter::Lite - prereq to something
 
 File::Copy::Recursive - used in the installer 
 
@@ -54,6 +67,8 @@ HTML::FillInForm::Lite
 
 HTML::FromText
 
+HTML::Menu::Select
+
 HTML::Tagset
 
 HTML::Template
@@ -66,6 +81,8 @@ HTTP::Date
 
 JSON - but only the PP ver
 
+LWP
+
 Mail::DeliveryStatus::BounceParser
 
 Mail::Address
@@ -73,6 +90,8 @@ Mail::Address
 Mail::Verp
 
 MIME::EncWords
+
+MIME::Base64::Perl
 
 MIME::Tools
 
@@ -88,21 +107,23 @@ PHP::Session
 
 Text::CSV 
 
+Text::FrontMatter::YAML
+
 Text::Markdown
 
 Text::Tabs
 
-Text::Wrap
+Text::Wrap - most likely gets pulled by something else. 
 
-Time::Local
+Time::Local - should be in core
 
 Time::Piece::MySQL
 
-Try::Tiny
+Try::Tiny - prereq to something 
 
-URI
+URI - prereq to something 
 
-URI::Escape
+URI::Escape - prereq to something 
 
 URI::Find
 
@@ -110,13 +131,8 @@ URI::GoogleChart - used for the fancy charts Dada Mail's Tracker plugin uses.
 
 URI::QueryParam - used by AWS::Signature4
 
-Crypt::CipherSaber
-
-MIME::Base64::Perl
-
 YAML::Tiny
 
-Text::FrontMatter::YAML
 
-HTML::Menu::Select
+# Suggested: HTTP::Tiny if LWP is not available? 
 

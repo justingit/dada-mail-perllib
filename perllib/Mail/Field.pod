@@ -1,6 +1,8 @@
+=encoding utf8
+
 =head1 NAME
 
-Mail::Field - Base class for manipulation of mail header fields
+Mail::Field - base-class for manipulation of mail header fields
 
 =head1 INHERITANCE
 
@@ -38,12 +40,12 @@ new objects. These can all be categorized as constructor.
 
 =over 4
 
-=item Mail::Field-E<gt>B<combine>(FIELDS)
+=item Mail::Field-E<gt>B<combine>($fields)
 
 Take a LIST of C<Mail::Field> objects (which should all be of the same
 sub-class) and create a new object in that same class.
 
-=item Mail::Field-E<gt>B<extract>(TAG, HEAD [, INDEX ])
+=item Mail::Field-E<gt>B<extract>( $tag, $head [, $index ] )
 
 Takes as arguments the tag name, a C<Mail::Head> object
 and optionally an index.
@@ -52,16 +54,16 @@ If the index argument is given then C<extract> will retrieve the given tag
 from the C<Mail::Head> object and create a new C<Mail::Field> based object.
 I<undef> will be returned in the field does not exist.
 
-If the index argument is not given the the result depends on the context
+If the index argument is not given the result depends on the context
 in which C<extract> is called. If called in a scalar context the result
 will be as if C<extract> was called with an index value of zero. If called
 in an array context then all tags will be retrieved and a list of
 C<Mail::Field> objects will be returned.
 
-=item Mail::Field-E<gt>B<new>(TAG [, STRING | OPTIONS])
+=item Mail::Field-E<gt>B<new>( $tag [, STRING | %options] )
 
 Create an object in the class which defines the field specified by
-the TAG argument.
+the $tag argument.
 
 =back
 
@@ -69,13 +71,13 @@ the TAG argument.
 
 =over 4
 
-=item $obj-E<gt>B<create>(OPTIONS)
+=item $obj-E<gt>B<create>(%options)
 
 This constructor is used internally with preprocessed field information.
 When called on an existing object, its original content will get
 replaced.
 
-=item $obj-E<gt>B<parse>
+=item $obj-E<gt>B<parse>()
 
 Parse a field line.
 
@@ -85,20 +87,20 @@ Parse a field line.
 
 =over 4
 
-=item $obj-E<gt>B<set>(OPTIONS)
+=item $obj-E<gt>B<set>(%options)
 
 Change the settings (the content, but then smart) of this field.
 
-=item $obj-E<gt>B<stringify>
+=item $obj-E<gt>B<stringify>()
 
 Returns the field as a string.
 
-=item $obj-E<gt>B<tag>
+=item $obj-E<gt>B<tag>()
 
-=item Mail::Field-E<gt>B<tag>
+=item Mail::Field-E<gt>B<tag>()
 
 Return the tag (in the correct case) for this item.  Well, actually any
-casing is OK, because the field tags are treated case-insentitive; however
+casing is OK, because the field tags are treated case-insensitive; however
 people have some preferences.
 
 =back
@@ -107,7 +109,7 @@ people have some preferences.
 
 =over 4
 
-=item $obj-E<gt>B<text>([STRING])
+=item $obj-E<gt>B<text>( [STRING] )
 
 Without arguments, the field is returned as L<stringify()|Mail::Field/"Accessors"> does.  Otherwise,
 the STRING is parsed with L<parse()|Mail::Field/""Fake" constructors"> to replace the object's content.
@@ -163,7 +165,7 @@ C<_header_pkg_name()> subroutine in C<Mail::Field>
 =item Error: Undefined subroutine <method> called
 
 Mail::Field objects use autoloading to compile new functionality.
-Apparently, the mehod called is not implemented for the specific
+Apparently, the method called is not implemented for the specific
 class of the field object.
 
 =back
@@ -186,7 +188,7 @@ For other contributors see ChangeLog.
 =head1 LICENSE
 
 Copyrights 1995-2000 Graham Barr E<lt>gbarr@pobox.comE<gt> and
-2001-2007 Mark Overmeer E<lt>perl@overmeer.netE<gt>.
+2001-2017 Mark Overmeer E<lt>perl@overmeer.netE<gt>.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

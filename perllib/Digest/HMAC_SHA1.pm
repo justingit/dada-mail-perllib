@@ -1,8 +1,9 @@
 package Digest::HMAC_SHA1;
-$VERSION="1.01";
+our $VERSION = '1.04'; # VERSION
+our $AUTHORITY = 'cpan:ARODLAND'; # AUTHORITY
 
 use strict;
-use Digest::SHA1 qw(sha1);
+use Digest::SHA qw(sha1);
 use Digest::HMAC qw(hmac);
 
 # OO interface
@@ -11,7 +12,7 @@ use vars qw(@ISA);
 sub new
 {
     my $class = shift;
-    $class->SUPER::new($_[0], "Digest::SHA1", 64);
+    $class->SUPER::new($_[0], "Digest::SHA", 64);  # Digest::SHA defaults to SHA-1
 }
 
 # Functional interface
@@ -62,9 +63,13 @@ This module provide HMAC-SHA-1 hashing.
 
 =head1 SEE ALSO
 
-L<Digest::HMAC>, L<Digest::SHA1>, L<Digest::HMAC_MD5>
+L<Digest::HMAC>, L<Digest::SHA>, L<Digest::HMAC_MD5>
 
-=head1 AUTHOR
+=head1 MAINTAINER
+
+Andrew Rodland <arodland@cpan.org>
+
+=head1 ORIGINAL AUTHOR
 
 Gisle Aas <gisle@aas.no>
 

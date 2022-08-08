@@ -1,10 +1,15 @@
-# Copyrights 1995-2011 by Mark Overmeer <perl@overmeer.net>.
+# Copyrights 1995-2019 by [Mark Overmeer <markov@cpan.org>].
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 2.00.
+# Pod stripped from pm file by OODoc 2.02.
+# This code is part of the bundle MailTools.  Meta-POD processed with
+# OODoc into POD and HTML manual-pages.  See README.md for Copyright.
+# Licensed under the same terms as Perl itself.
+
 package Mail::Cap;
 use vars '$VERSION';
-$VERSION = '2.08';
+$VERSION = '2.21';
+
 
 use strict;
 
@@ -24,6 +29,7 @@ else
         );   # this path is specified under RFC1524 appendix A 
 }
 
+#--------
 
 sub new
 {   my $class = shift;
@@ -71,23 +77,28 @@ sub _process_file
     while(<MAILCAP>)
     {   next if /^\s*#/; # comment
         next if /^\s*$/; # blank line
-        $_ .= <MAILCAP> while s/\\\s*$//; # continuation line
+        $_ .= <MAILCAP>  # continuation line
+           while s/(^|[^\\])((?:\\\\)*)\\\s*$/$1$2/;
         chomp;
-        s/\0//g;            # ensure no NULs in the line
-        s/([^\\]);/$1\0/g;  # make field separator NUL
+        s/\0//g;              # ensure no NULs in the line
+        s/(^|[^\\]);/$1\0/g;  # make field separator NUL
+        my ($type, $view, @parts) = split /\s*\0\s*/;
 
-        my @parts = split /\s*\0\s*/, $_;
-        my $type  = shift @parts;
         $type    .= "/*" if $type !~ m[/];
-
-        my $view  = shift @parts;
         $view     =~ s/\\;/;/g;
+        $view     =~ s/\\\\/\\/g;
         my %field = (view => $view);
 
         foreach (@parts)
         {   my($key, $val) = split /\s*\=\s*/, $_, 2;
-            $val =~ s/\\;/;/g if defined $val;
-            $field{$key} = defined $val ? $val : 1;
+            if(defined $val)
+            {   $val =~ s/\\;/;/g;
+                $val =~ s/\\\\/\\/g;
+                $field{$key} = $val;
+            }
+            else
+            {   $field{$key} = 1;
+            }
         }
 
         if(my $test = $field{test})
@@ -109,6 +120,7 @@ sub _process_file
     close MAILCAP;
 }
 
+#------------------
 
 sub view    { my $self = shift; $self->_run($self->viewCmd(@_))    }
 sub compose { my $self = shift; $self->_run($self->composeCmd(@_)) }
@@ -123,6 +135,7 @@ sub _run($)
     1;
 }
 
+#------------------
 
 sub viewCmd    { shift->_createCommand(view    => @_) }
 sub composeCmd { shift->_createCommand(compose => @_) }
@@ -148,6 +161,7 @@ sub makeName($$)
     $template;
 }
 
+#------------------
 
 sub field($$)
 {   my($self, $type, $field) = @_;

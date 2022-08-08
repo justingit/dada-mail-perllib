@@ -1,10 +1,14 @@
-# Copyrights 1995-2011 by Mark Overmeer <perl@overmeer.net>.
+# Copyrights 1995-2019 by [Mark Overmeer <markov@cpan.org>].
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 2.00.
+# Pod stripped from pm file by OODoc 2.02.
+# This code is part of the bundle MailTools.  Meta-POD processed with
+# OODoc into POD and HTML manual-pages.  See README.md for Copyright.
+# Licensed under the same terms as Perl itself.
+
 package Mail::Internet;
 use vars '$VERSION';
-$VERSION = '2.08';
+$VERSION = '2.21';
 
 use strict;
 # use warnings?  probably breaking too much code
@@ -85,6 +89,7 @@ sub dup()
     $dup;
 }
 
+#---------------
 
 sub body(;$@)
 {   my $self = shift;
@@ -98,6 +103,7 @@ sub body(;$@)
 
 sub head         { shift->{mail_inet_head} ||= Mail::Header->new }
 
+#---------------
 
 sub print($)
 {   my $self = shift;
@@ -138,6 +144,7 @@ sub as_mbox_string($)
     $self->as_string . "\n";
 }
 
+#---------------
 
 sub header       { shift->head->header(@_) }
 sub fold         { shift->head->fold(@_) }
@@ -199,6 +206,7 @@ sub empty()
     1;
 }
 
+#---------------
 
 sub remove_sig($)
 {   my $body   = shift->body;
@@ -251,6 +259,7 @@ sub tidy_body()
     $body;
 }
 
+#---------------
 
 sub reply(@)
 {   my ($self, %arg) = @_;
@@ -284,8 +293,8 @@ sub reply(@)
     my $name = $sender->name;
     unless(defined $name)
     {    my $fr = $self->get('From');
-         defined $fr and $fr   = (Mail::Address->parse($fr))[0];
-         defined $fr and $name = $fr->name;
+         $fr    = (Mail::Address->parse($fr))[0] if defined $fr;
+         $name  = $fr->name if defined $fr;
     }
 
     my $indent = $arg{Indent} || ">";
@@ -339,8 +348,11 @@ sub reply(@)
 
     if(defined $mid)
     {    $inreply  = $mid;
-         $inreply .= ' from ' . $name if defined $name;
-         $inreply .= ' on '   . $date if defined $date;
+         my @comment;
+         push @comment, "from $name" if defined $name;
+         push @comment, "on $date"   if defined $date;
+         local $"  = ' ';
+         $inreply .= " (@comment)"   if @comment;
     }
     elsif(defined $name)
     {    $inreply  = $name    . "'s message";

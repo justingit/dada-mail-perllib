@@ -1,12 +1,16 @@
-# Copyrights 1995-2011 by Mark Overmeer <perl@overmeer.net>.
+# Copyrights 1995-2019 by [Mark Overmeer <markov@cpan.org>].
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 2.00.
+# Pod stripped from pm file by OODoc 2.02.
+# This code is part of the bundle MailTools.  Meta-POD processed with
+# OODoc into POD and HTML manual-pages.  See README.md for Copyright.
+# Licensed under the same terms as Perl itself.
+
 use strict;
 
 package Mail::Field::AddrList;
 use vars '$VERSION';
-$VERSION = '2.08';
+$VERSION = '2.21';
 
 use base 'Mail::Field';
 
@@ -51,7 +55,7 @@ sub addresses { keys %{shift->{AddrList}} }
 
 
 # someone forgot to implement a method to return the Mail::Address
-# objects.  Added in 2.00; a pitty that the name addresses() is already
+# objects.  Added in 2.00; a pity that the name addresses() is already
 # given :(  That one should have been named emails()
 sub addr_list { values %{shift->{AddrList}} }
 

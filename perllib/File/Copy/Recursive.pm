@@ -374,7 +374,7 @@ sub pathempty {
 
     my $starting_point = Cwd::cwd();
     my ( $starting_dev, $starting_ino ) = ( lstat $starting_point )[ 0, 1 ];
-    chdir($pth) or Carp::croak("Failed to change directory to â€œ$pthâ€: $!");
+    chdir($pth) or Carp::croak("Failed to change directory to “$pth”: $!");
     $pth = '.';
     _bail_if_changed( $pth, $orig_dev, $orig_ino );
 
@@ -410,7 +410,7 @@ sub pathempty {
         }
     }
 
-    chdir($starting_point) or Carp::croak("Failed to change directory to â€œ$starting_pointâ€: $!");
+    chdir($starting_point) or Carp::croak("Failed to change directory to “$starting_point”: $!");
     _bail_if_changed( ".", $starting_dev, $starting_ino );
 
     return 1;

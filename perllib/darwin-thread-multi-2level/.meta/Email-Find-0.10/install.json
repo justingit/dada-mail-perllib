@@ -1,0 +1,1 @@
+{"name":"Email::Find","pathname":"M/MI/MIYAGAWA/Email-Find-0.10.tar.gz","version":"0.10","target":"Email::Find","provides":{"Email::Find::addrspec":{"file":"lib/Email/Find/addrspec.pm","version":"0.09"},"Email::Find":{"file":"lib/Email/Find.pm","version":"0.10"}},"dist":"Email-Find-0.10"}

@@ -1,14 +1,10 @@
 package Data::Google::Visualization::DataTable;
-BEGIN {
-  $Data::Google::Visualization::DataTable::VERSION = '0.09';
-}
-
+$Data::Google::Visualization::DataTable::VERSION = '0.11';
 use strict;
 use warnings;
 
 use Carp qw(croak carp);
 use Storable qw(dclone);
-use JSON;
 use Time::Local;
 
 =head1 NAME
@@ -17,7 +13,7 @@ Data::Google::Visualization::DataTable - Easily create Google DataTable objects
 
 =head1 VERSION
 
-version 0.09
+version 0.11
 
 =head1 DESCRIPTION
 
@@ -159,13 +155,21 @@ for defining properties.
 
 =head2 new
 
-Constructor. Accepts a hashref of arguments:
+Constructor. B<In 99% of cases, you really don't need to provide any options at
+all to the constructor>. Accepts a hashref of arguments:
 
 C<p> -  a datatable-wide properties element (see C<Properties> above and the
 Google docs).
 
 C<with_timezone> - defaults to false. An experimental feature for doing dates
 the right way. See: L<DATES AND TIMES> for discussion below.
+
+C<json_object> - optional, and defaults to a sensibly configured L<JSON::XS>
+object. If you really want to avoid using L<JSON::XS> for some reason, you can
+pass in something else here that supports an C<encode> method (and also avoid
+loading L<JSON::XS> at all, as we lazy-load it). If you just want to configure
+the L<JSON::XS> object we use, consider using the C<json_xs_object> method
+specified below instead. B<tl;dr: ignore this option>.
 
 =cut
 
@@ -176,15 +180,26 @@ sub new {
 		columns              => [],
 		column_mapping       => {},
 		rows                 => [],
-		json_xs              => JSON->new()->canonical(1)->allow_nonref,
 		all_columns_have_ids => 0,
 		column_count         => 0,
 		pedantic             => 1,
 		with_timezone        => ($args->{'with_timezone'} || 0)
 	};
-	$self->{'properties'} = $args->{'p'} if defined $args->{'p'};
 	bless $self, $class;
+
+	$self->{'properties'} = $args->{'p'} if defined $args->{'p'};
+	$self->{'json_xs'} = $args->{'json_object'} ||
+		$self->_create_json_xs_object();
+
 	return $self;
+}
+
+# We don't actually need JSON::XS, and in fact, there's a user who'd rather we
+# didn't insist on it, so we lazy load both the class and our object
+sub _create_json_xs_object {
+	my $self = shift;
+	require JSON::XS;
+	return JSON::XS->new()->canonical(1)->allow_nonref;
 }
 
 =head2 add_columns
@@ -442,6 +457,7 @@ sub add_rows {
 				# We're going to have to retrieve them ourselves
 				} else {
 					my @initial_date_digits;
+					my $has_milliseconds;
 
 					# Epoch timestamp
 					if (! ref( $cell->{'v'} ) ) {
@@ -455,14 +471,18 @@ sub add_rows {
 						my $dt = $cell->{'v'};
 						@initial_date_digits = (
 							$dt->year, ( $dt->mon - 1 ), $dt->day,
-							$dt->hour, $dt->min, $dt->sec
+							$dt->hour, $dt->min, $dt->sec,
 						);
+						if ( $dt->millisecond ) {
+							$has_milliseconds++;
+							push( @initial_date_digits, $dt->millisecond );
+						}
 
 					} elsif ( $cell->{'v'}->isa('Time::Piece') ) {
 						my $tp = $cell->{'v'};
 						@initial_date_digits = (
 							$tp->year, $tp->_mon, $tp->mday,
-							$tp->hour, $tp->min, $tp->sec
+							$tp->hour, $tp->min, $tp->sec,
 						);
 
 					} else {
@@ -473,8 +493,12 @@ sub add_rows {
 						@date_digits = @initial_date_digits[ 0 .. 2 ];
 					} elsif ( $type eq 'datetime' ) {
 						@date_digits = @initial_date_digits[ 0 .. 5 ];
+						push( @date_digits, $initial_date_digits[6] )
+							if $has_milliseconds;
 					} else { # Time of day
 						@date_digits = @initial_date_digits[ 3 .. 5 ];
+						push( @date_digits, $initial_date_digits[6] )
+							if $has_milliseconds;
 					}
 				}
 

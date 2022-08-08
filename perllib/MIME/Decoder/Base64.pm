@@ -1,4 +1,6 @@
 package MIME::Decoder::Base64;
+use strict;
+use warnings;
 
 
 =head1 NAME
@@ -58,7 +60,7 @@ use MIME::Tools qw(debug);
 @ISA = qw(MIME::Decoder);
 
 ### The package version, both in 1.23 style *and* usable by MakeMaker:
-$VERSION = "5.502";
+$VERSION = "5.510";
 
 ### How many bytes to encode at a time (must be a multiple of 3, and
 ### less than (76 * 0.75)!
@@ -121,9 +123,10 @@ sub encode_it {
 
     my $nread;
     my $buf = '';
+    my $nl = $MIME::Entity::BOUNDARY_DELIMITER || "\n";
     while ($nread = $in->read($buf, $EncodeChunkLength)) {
-	$encoded = encode_base64($buf);
-	$encoded .= "\n" unless ($encoded =~ /\n\Z/);   ### ensure newline!
+	$encoded = encode_base64($buf, $nl);
+	$encoded .= $nl unless ($encoded =~ /$nl\Z/);   ### ensure newline!
 	$out->print($encoded);
     }
     1;

@@ -34,10 +34,6 @@ This class has no official public interface
 =cut
 
 use strict;
-#use Carp qw(croak carp);
-#   $Carp::Verbose = 1; 
-#   use Carp;
-#   $SIG{ __DIE__ } = sub { Carp::confess( @_ ) };
 
 ### All possible end-of-line sequences.
 ### Note that "" is included because last line of stream may have no newline!
@@ -187,7 +183,7 @@ sub eos_type {
 #
 sub native_handle {
     my $fh = shift;
-    return $fh if $fh->isa('IO::File');
+    return $fh if ($fh->isa('IO::File') || $fh->isa('IO::Handle'));
     return $fh if (ref $fh eq 'GLOB');
     undef;
 }
@@ -245,7 +241,7 @@ sub read_chunk {
 	if ($n_out) {            ### native input, native output [fastest]
 	    while (<$n_in>) {
 		# Normalize line ending
-		$_ =~ s/(:?\n\r|\r\n|\r)$/\n/ if $normalize_newlines;
+		$_ =~ s/(?:\n\r|\r\n|\r)$/\n/ if $normalize_newlines;
 		if (substr($_, 0, 2) eq '--') {
 		    ($maybe = $_) =~ s/[ \t\r\n]+\Z//;
 		    $bh{$maybe} and do { $eos = $bh{$maybe}; last };
@@ -257,7 +253,7 @@ sub read_chunk {
 	else {                   ### native input, OO output [slower]
 	    while (<$n_in>) {
 		# Normalize line ending
-		$_ =~ s/(:?\n\r|\r\n|\r)$/\n/ if $normalize_newlines;
+		$_ =~ s/(?:\n\r|\r\n|\r)$/\n/ if $normalize_newlines;
 		if (substr($_, 0, 2) eq '--') {
 		    ($maybe = $_) =~ s/[ \t\r\n]+\Z//;
 		    $bh{$maybe} and do { $eos = $bh{$maybe}; last };
@@ -271,7 +267,7 @@ sub read_chunk {
 	if ($n_out) {            ### OO input, native output [even slower]
 	    while (defined($_ = $in->getline)) {
 		# Normalize line ending
-		$_ =~ s/(:?\n\r|\r\n|\r)$/\n/ if $normalize_newlines;
+		$_ =~ s/(?:\n\r|\r\n|\r)$/\n/ if $normalize_newlines;
 		if (substr($_, 0, 2) eq '--') {
 		    ($maybe = $_) =~ s/[ \t\r\n]+\Z//;
 		    $bh{$maybe} and do { $eos = $bh{$maybe}; last };
@@ -283,7 +279,7 @@ sub read_chunk {
 	else {                   ### OO input, OO output [slowest]
 	    while (defined($_ = $in->getline)) {
 		# Normalize line ending
-		$_ =~ s/(:?\n\r|\r\n|\r)$/\n/ if $normalize_newlines;
+		$_ =~ s/(?:\n\r|\r\n|\r)$/\n/ if $normalize_newlines;
 		if (substr($_, 0, 2) eq '--') {
 		    ($maybe = $_) =~ s/[ \t\r\n]+\Z//;
 		    $bh{$maybe} and do { $eos = $bh{$maybe}; last };

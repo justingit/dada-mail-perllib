@@ -1,6 +1,4 @@
-# Date::Parse $Id: //depot/TimeDate/lib/Date/Parse.pm#22 $
-#
-# Copyright (c) 1995 Graham Barr. All rights reserved. This program is free
+# Copyright (c) 1995-2009 Graham Barr. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 
@@ -17,7 +15,7 @@ use Exporter;
 @ISA = qw(Exporter);
 @EXPORT = qw(&strtotime &str2time &strptime);
 
-$VERSION = "2.27";
+$VERSION = "2.33";
 
 my %month = (
 	january		=> 0,
@@ -75,7 +73,7 @@ sub {
   my $dtstr = lc shift;
   my $merid = 24;
 
-  my($year,$month,$day,$hh,$mm,$ss,$zone,$dst,$frac);
+  my($century,$year,$month,$day,$hh,$mm,$ss,$zone,$dst,$frac);
 
   $zone = tz_offset(shift) if @_;
 
@@ -86,19 +84,20 @@ sub {
   # ignore day names
   $dtstr =~ s#([\d\w\s])[\.\,]\s#$1 #sog;
   $dtstr =~ s/,/ /g;
-  $dtstr =~ s#($daypat)\s*(den\s)?# #o;
+  $dtstr =~ s#($daypat)\s*(den\s)?\b# #o;
   # Time: 12:00 or 12:00:00 with optional am/pm
 
   return unless $dtstr =~ /\S/;
   
-  if ($dtstr =~ s/\s(\d{4})([-:]?)(\d\d?)\2(\d\d?)(?:[Tt ](\d\d?)(?:([-:]?)(\d\d?)(?:\6(\d\d?)(?:[.,](\d+))?)?)?)?(?=\D)/ /) {
+  if ($dtstr =~ s/\s(\d{4})([-:]?)(\d\d?)\2(\d\d?)(?:[-Tt ](\d\d?)(?:([-:]?)(\d\d?)(?:\6(\d\d?)(?:[.,](\d+))?)?)?)?(?=\D)/ /) {
     ($year,$month,$day,$hh,$mm,$ss,$frac) = ($1,$3-1,$4,$5,$7,$8,$9);
   }
 
   unless (defined $hh) {
-    if ($dtstr =~ s#[:\s](\d\d?):(\d\d?)(:(\d\d?)(?:\.\d+)?)?\s*(?:([ap])\.?m?\.?)?\s# #o) {
-      ($hh,$mm,$ss) = ($1,$2,$4 || 0);
-      $merid = $ampm{$5} if $5;
+    if ($dtstr =~ s#[:\s](\d\d?):(\d\d?)(:(\d\d?)(?:\.\d+)?)?(z)?\s*(?:([ap])\.?m?\.?)?\s# #o) {
+      ($hh,$mm,$ss) = ($1,$2,$4);
+      $zone = 0 if $5;
+      $merid = $ampm{$6} if $6;
     }
 
     # Time: 12 am
@@ -139,6 +138,9 @@ sub {
     }
     elsif ($dtstr =~ s#($monpat)\s*(\d+)\s*($sufpat)?\s# #o) {
       ($month,$day) = ($month{$1},$2);
+    }
+    elsif ($dtstr =~ s#($monpat)([\/-])(\d+)[\/-]# #o) {
+      ($month,$day) = ($month{$1},$3);
     }
 
     # Date: 961212
@@ -193,12 +195,15 @@ sub {
     }
   }
 
-  $year -= 1900 if defined $year && $year > 1900;
+  if (defined $year && $year > 1900) {
+    $century = int($year / 100);
+    $year -= 1900;
+  }
 
   $zone += 3600 if defined $zone && $dst;
   $ss += "0.$frac" if $frac;
 
-  return ($ss,$mm,$hh,$day,$month,$year,$zone);
+  return ($ss,$mm,$hh,$day,$month,$year,$zone,$century);
 }
 ESQ
 
@@ -231,7 +236,7 @@ sub str2time
  return undef
 	unless @t;
 
- my($ss,$mm,$hh,$day,$month,$year,$zone) = @t;
+ my($ss,$mm,$hh,$day,$month,$year,$zone, $century) = @t;
  my @lt  = localtime(time);
 
  $hh    ||= 0;
@@ -249,6 +254,9 @@ sub str2time
 
  $year = ($month > $lt[4]) ? ($lt[5] - 1) : $lt[5]
 	unless(defined $year);
+
+ # we were given a 4 digit year, so let's keep using those
+ $year += 1900 if defined $century;
 
  return undef
 	unless($month <= 11 && $day >= 1 && $day <= 31
@@ -310,19 +318,21 @@ C<Date::Parse> provides two routines for parsing date strings into time values.
 
 C<str2time> parses C<DATE> and returns a unix time value, or undef upon failure.
 C<ZONE>, if given, specifies the timezone to assume when parsing if the
-date string does not specify a timezome.
+date string does not specify a timezone.
 
 =item strptime(DATE [, ZONE])
 
 C<strptime> takes the same arguments as str2time but returns an array of
-values C<($ss,$mm,$hh,$day,$month,$year,$zone)>. Elements are only defined
-if they could be extracted from the date string. The C<$zone> element is
-the timezone offset in seconds from GMT. An empty array is returned upon
+values C<($ss,$mm,$hh,$day,$month,$year,$zone,$century)>. Elements are only
+defined if they could be extracted from the date string. The C<$zone> element
+is the timezone offset in seconds from GMT. An empty array is returned upon
 failure.
+
+=back
 
 =head1 MULTI-LANGUAGE SUPPORT
 
-Date::Parse is capable of parsing dates in several languages, these are
+Date::Parse is capable of parsing dates in several languages, these include
 English, French, German and Italian.
 
 	$lang = Date::Language->new('German');
@@ -346,8 +356,9 @@ Below is a sample list of dates that are known to be parsable with Date::Parse
 
 =head1 LIMITATION
 
-Date::Parse uses Time::Local internally, so is limited to only parsing dates
-which result in valid values for Time::Local::timelocal
+Date::Parse uses L<Time::Local> internally, so is limited to only parsing dates
+which result in valid values for Time::Local::timelocal. This generally means dates
+between 1901-12-17 00:00:00 GMT and 2038-01-16 23:59:59 GMT
 
 =head1 BUGS
 
@@ -369,11 +380,9 @@ Graham Barr <gbarr@pobox.com>
 
 =head1 COPYRIGHT
 
-Copyright (c) 1995 Graham Barr. All rights reserved. This program is free
+Copyright (c) 1995-2009 Graham Barr. This program is free
 software; you can redistribute it and/or modify it under the same terms
 as Perl itself.
 
 =cut
-
-# $Id: //depot/TimeDate/lib/Date/Parse.pm#22 $
 

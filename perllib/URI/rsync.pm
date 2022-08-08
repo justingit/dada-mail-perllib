@@ -5,8 +5,7 @@ package URI::rsync;  # http://rsync.samba.org/
 use strict;
 use warnings;
 
-our $VERSION = '1.71';
-$VERSION = eval $VERSION;
+our $VERSION = '5.12';
 
 use parent qw(URI::_server URI::_userpass);
 

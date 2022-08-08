@@ -1,14 +1,19 @@
-# Copyrights 1995-2011 by Mark Overmeer <perl@overmeer.net>.
+# Copyrights 1995-2019 by [Mark Overmeer <markov@cpan.org>].
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 2.00.
+# Pod stripped from pm file by OODoc 2.02.
+# This code is part of the bundle MailTools.  Meta-POD processed with
+# OODoc into POD and HTML manual-pages.  See README.md for Copyright.
+# Licensed under the same terms as Perl itself.
+
 package Mail::Field;
 use vars '$VERSION';
-$VERSION = '2.08';
+$VERSION = '2.21';
 
+
+use strict;
 
 use Carp;
-use strict;
 use Mail::Field::Generic;
 
 
@@ -29,7 +34,7 @@ sub _header_pkg_name
 }
 
 sub _require_dir
-{   my($class,$dir,$dir_sep) = @_;
+{   my($class, $dir, $dir_sep) = @_;
 
     local *DIR;
     opendir DIR, $dir
@@ -47,6 +52,9 @@ sub _require_dir
         else
         {   $p =~ s/-/_/go;
             eval "require ${class}::$p";
+
+            # added next warning in 2.14, may be ignored for ancient code
+            warn $@ if $@;
         }
     }
     closedir DIR;
@@ -62,11 +70,12 @@ sub import
         return;
     }
 
-    my($dir,$dir_sep);
-    foreach my $f (keys %INC)
+    my ($dir, $dir_sep);
+    foreach my $f (grep defined $INC{$_}, keys %INC)
     {   next if $f !~ /^Mail(\W)Field\W/i;
         $dir_sep = $1;
-        $dir = ($INC{$f} =~ /(.*Mail\W+Field)/i)[0] . $dir_sep;
+# $dir = ($INC{$f} =~ /(.*Mail\W+Field)/i)[0] . $dir_sep;
+        ($dir = $INC{$f}) =~ s/(Mail\W+Field).*/$1$dir_sep/;
         last;
     }
 
@@ -104,6 +113,7 @@ sub _build
     @_==1 ? $self->parse(@_) : $self->create(@_);
 }
 
+#-------------
 
 sub new
 {   my $class = shift;
@@ -169,6 +179,7 @@ sub extract
     $class->$method($text);
 }
 
+#-------------
 
 # before 2.00, this method could be called as class method, however
 # not all extensions supported that.
@@ -186,6 +197,7 @@ sub parse
     confess "parse() not implemented";
 }
 
+#-------------
 
 sub stringify { confess "stringify() not implemented" } 
 
@@ -207,11 +219,13 @@ sub set(@) { confess "set() not implemented" }
 # prevent the calling of AUTOLOAD for DESTROY :-)
 sub DESTROY {}
 
+#-------------
 
 sub text
 {   my $self = shift;
     @_ ? $self->parse(@_) : $self->stringify;
 }
 
+#-------------
 
 1;

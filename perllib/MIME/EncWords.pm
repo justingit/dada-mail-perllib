@@ -116,6 +116,7 @@ if (MIME::Charset::USE_ENCODE) {
 	}
     }
 } else {
+    require Unicode::String;
     require MIME::Charset::_Compat;
     for my $sub (@ENCODE_SUBS) {
         no strict "refs";
@@ -130,7 +131,7 @@ if (MIME::Charset::USE_ENCODE) {
 #------------------------------
 
 ### The package version, both in 1.23 style *and* usable by MakeMaker:
-$VERSION = '1.012.6';
+$VERSION = '1.014.3';
 
 ### Public Configuration Attributes
 $Config = {
@@ -152,7 +153,37 @@ my $NONPRINT = qr{[^$PRINTABLE]}; # Improvement: Unicode support.
 my $UNSAFE = qr{[^\x01-\x20$PRINTABLE]};
 my $WIDECHAR = qr{[^\x00-\xFF]};
 my $ASCIITRANS = qr{^(?:HZ-GB-2312|UTF-7)$}i;
+my $ASCIIINCOMPAT = qr{^UTF-(?:16|32)(?:BE|LE)?$}i;
 my $DISPNAMESPECIAL = "\\x22(),:;<>\\x40\\x5C"; # RFC5322 name-addr specials.
+
+#------------------------------
+
+# _utf_to_unicode CSETOBJ, STR
+#     Private: Convert UTF-16*/32* to Unicode or UTF-8.
+sub _utf_to_unicode {
+    my $csetobj = shift;
+    my $str = shift;
+
+    return $str if is_utf8($str);
+
+    return $csetobj->decode($str)
+	if MIME::Charset::USE_ENCODE();
+
+    my $cset = $csetobj->as_string;
+    my $unistr = Unicode::String->new();
+    if ($cset eq 'UTF-16' or $cset eq 'UTF-16BE') {
+	$unistr->utf16($str);
+    } elsif ($cset eq 'UTF-16LE') {
+	$unistr->utf16le($str);
+    } elsif ($cset eq 'UTF-32' or $cset eq 'UTF-32BE') {
+	$unistr->utf32($str);
+    } elsif ($cset eq 'UTF-32LE') {
+	$unistr->utf32le($str);
+    } else {
+	croak "unknown transformation '$cset'";
+    }
+    return $unistr->utf8;
+}
 
 #------------------------------
 
@@ -714,11 +745,17 @@ sub encode_mimewords  {
     # unsafe ASCII sequences
     my $UNSAFEASCII = ($maxrestlen <= 1)?
 	qr{(?: =\? )}ox:
-	qr{(?: =\? | [$PRINTABLE]{$Params{MaxLineLen}} )}ox;
-    $UNSAFEASCII = qr{(?: [$DISPNAMESPECIAL] | $UNSAFEASCII )}ox
+	qr{(?: =\? | [$PRINTABLE]{$Params{MaxLineLen}} )}x;
+    $UNSAFEASCII = qr{(?: [$DISPNAMESPECIAL] | $UNSAFEASCII )}x
 	if $Params{Minimal} eq 'DISPNAME';
 
     unless (ref($words) eq "ARRAY") {
+	# workaround for UTF-16* & UTF-32*: force UTF-8.
+	if ($charsetobj->as_string =~ /$ASCIIINCOMPAT/) {
+	    $words = _utf_to_unicode($charsetobj, $words);
+	    $charsetobj = MIME::Charset->new('UTF-8');
+	}
+
 	my @words = ();
 	# unfolding: normalize linear-white-spaces and orphan newlines.
 	$words =~ s/(?:[\r\n]+[\t ])*[\r\n]+([\t ]|\Z)/$1? " ": ""/eg;
@@ -786,6 +823,13 @@ sub encode_mimewords  {
 	next unless length($s);
 	my $csetobj = MIME::Charset->new($cset || "",
 					 Mapping => $Params{Mapping});
+
+	# workaround for UTF-16*/UTF-32*: force UTF-8
+	if ($csetobj->as_string and $csetobj->as_string =~ /$ASCIIINCOMPAT/) {
+	    $s = _utf_to_unicode($csetobj, $s);
+	    $csetobj = MIME::Charset->new('UTF-8');
+	}
+
 	# determine charset and encoding
 	# try defaults only if 7-bit charset detection is not required
 	my $enc;
@@ -1019,7 +1063,8 @@ sub _split_ascii {
     foreach my $line (split(/(?:[\t ]*[\r\n]+)+/, $s)) {
         my $spc = '';
 	foreach my $word (split(/([\t ]+)/, $line)) {
-	    next unless scalar(@splitwords) or $word; # skip first garbage
+	    # skip first garbage
+	    next unless scalar(@splitwords) or defined $word;
 	    if ($word =~ /[\t ]/) {
 		$spc = $word;
 		next;
@@ -1156,7 +1201,6 @@ sub _getparams {
     }
     return %GotParams;
 }
-
 
 #------------------------------
 

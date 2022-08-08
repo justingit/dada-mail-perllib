@@ -1,6 +1,8 @@
+=encoding utf8
+
 =head1 NAME
 
-Mail::Address - Parse mail addresses
+Mail::Address - parse mail addresses
 
 =head1 SYNOPSIS
 
@@ -31,7 +33,7 @@ separator between addresses;
 
 =item *
 
-limitted support for escapes in phrases and comments.  There are
+limited support for escapes in phrases and comments.  There are
 cases where it can get wrong; and
 
 =item *
@@ -47,13 +49,25 @@ of existing applications.  If you wish for a fully RFC2822 compliant
 implementation you may take a look at L<Mail::Message::Field::Full>,
 part of MailBox.
 
+B<. Example>
+
+  my $s = Mail::Message::Field::Full->new($from_header);
+  # ref $s isa Mail::Message::Field::Addresses;
+
+  my @g = $s->groups;          # all groups, at least one
+  # ref $g[0] isa Mail::Message::Field::AddrGroup;
+  my $ga = $g[0]->addresses;   # group addresses
+
+  my @a = $s->addresses;       # all addresses
+  # ref $a[0] isa Mail::Message::Field::Address;
+
 =head1 METHODS
 
 =head2 Constructors
 
 =over 4
 
-=item Mail::Address-E<gt>B<new>(PHRASE, ADDRESS, [ COMMENT ])
+=item Mail::Address-E<gt>B<new>( $phrase, $address, [ $comment ] )
 
 Create a new C<Mail::Address> object which represents an address with the
 elements given. In a message these 3 elements would be seen like:
@@ -65,7 +79,7 @@ example:
 
  Mail::Address->new("Perl5 Porters", "perl5-porters@africa.nicoh.com");
 
-=item $obj-E<gt>B<parse>(LINE)
+=item $obj-E<gt>B<parse>($line)
 
 Parse the given line a return a list of extracted C<Mail::Address> objects.
 The line would normally be one taken from a To,Cc or Bcc line in a message
@@ -80,22 +94,22 @@ example:
 
 =over 4
 
-=item $obj-E<gt>B<address>
+=item $obj-E<gt>B<address>()
 
 Return the address part of the object.
 
-=item $obj-E<gt>B<comment>
+=item $obj-E<gt>B<comment>()
 
 Return the comment part of the object
 
-=item $obj-E<gt>B<format>([ADDRESSes])
+=item $obj-E<gt>B<format>(@addresses)
 
 Return a string representing the address in a suitable form to be placed
 on a C<To>, C<Cc>, or C<Bcc> line of a message.  This method is called on
-the first ADDRESS to be used; other specified ADDRESSes will be appended,
-separated with commas.
+the first address to be used; other specified addresses will be appended,
+separated by commas.
 
-=item $obj-E<gt>B<phrase>
+=item $obj-E<gt>B<phrase>()
 
 Return the phrase part of the object.
 
@@ -105,16 +119,20 @@ Return the phrase part of the object.
 
 =over 4
 
-=item $obj-E<gt>B<host>
+=item $obj-E<gt>B<host>()
 
 Return the address excluding the user id and '@'
 
-=item $obj-E<gt>B<name>
+=item $obj-E<gt>B<name>()
 
 Using the information contained within the object attempt to identify what
 the person or groups name is.
 
-=item $obj-E<gt>B<user>
+B<Note:> This function tries to be smart with the "phrase" of the
+email address, which is probably a very bad idea.  Consider to use
+L<phrase()|Mail::Address/"Accessors"> itself.
+
+=item $obj-E<gt>B<user>()
 
 Return the address excluding the '@' and the mail domain
 
@@ -138,7 +156,7 @@ For other contributors see ChangeLog.
 =head1 LICENSE
 
 Copyrights 1995-2000 Graham Barr E<lt>gbarr@pobox.comE<gt> and
-2001-2007 Mark Overmeer E<lt>perl@overmeer.netE<gt>.
+2001-2017 Mark Overmeer E<lt>perl@overmeer.netE<gt>.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

@@ -1,0 +1,62 @@
+{
+   "abstract" : "Framework for building reusable web-applications",
+   "author" : [
+      "Jesse Erlbaum <jesse@erlbaum.net>",
+      "Mark Stosberg <mark@summersault.com>",
+      "Martin McGrath <mcgrath.martin@gmail.com>",
+      "with the help of many others!"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "Module::Build version 0.4231",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : 2
+   },
+   "name" : "CGI-Application",
+   "no_index" : {
+      "file" : []
+   },
+   "prereqs" : {
+      "runtime" : {
+         "recommends" : {
+            "CGI::PSGI" : 0.09
+         },
+         "requires" : {
+            "CGI" : 4.21,
+            "Carp" : 0,
+            "Class::ISA" : 0,
+            "HTML::Template" : 0,
+            "Module::Build" : 0,
+            "Scalar::Util" : 0,
+            "Test::More" : 0.47,
+            "Test::Requires" : 0
+         }
+      }
+   },
+   "provides" : {
+      "CGI::Application" : {
+         "file" : "lib/CGI/Application.pm",
+         "version" : "4.61"
+      },
+      "CGI::Application::Mailform" : {
+         "file" : "lib/CGI/Application/Mailform.pm"
+      }
+   },
+   "release_status" : "stable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/MartinMcGrath/CGI--Application/issues"
+      },
+      "license" : [
+         "http://dev.perl.org/licenses/"
+      ],
+      "repository" : {
+         "url" : "https://github.com/MartinMcGrath/CGI--Application"
+      }
+   },
+   "version" : "4.61",
+   "x_serialization_backend" : "JSON::PP version 4.11"
+}

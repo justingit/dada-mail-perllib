@@ -1,30 +1,34 @@
-# Copyright (c) 2000, 2009 Michael G. Schwern.  All rights reserved.
-# This program is free software; you can redistribute it and/or modify
-# it under the same terms as Perl itself.
-
 package URI::Find;
 
 require 5.006;
 
 use strict;
+use warnings;
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT);
 
-$VERSION        = 20111103;
+$VERSION        = 20160806;
 @EXPORT         = qw(find_uris);
 
 use constant YES => (1==1);
 use constant NO  => !YES;
 
 use Carp        qw(croak);
-use URI::URL;
 
 require URI;
 
+my $reserved   = q(;/?:@&=+$,[]);
+my $mark       = q(-_.!~*'());
+my $unreserved = "A-Za-z0-9\Q$mark\E";
+my $uric       = quotemeta($reserved) . '\p{isAlpha}' . $unreserved . "%";
+
 # URI scheme pattern without the non-alpha numerics.
 # Those are extremely uncommon and interfere with the match.
-my($schemeRe) = qr/[a-zA-Z][a-zA-Z0-9]*/;
-my($uricSet)  = $URI::uric;
+my($schemeRe) = qr/[a-zA-Z][a-zA-Z0-9\+]*/;
+my($uricSet)  = $uric; # use new set
+
+# Some schemes which URI.pm does not explicitly support.
+my $extraSchemesRe = qr{^(?:git|svn|ssh|svn\+ssh)$};
 
 # We need to avoid picking up 'HTTP::Request::Common' so we have a
 # subset of uric without a colon ("I have no colon and yet I must poop")
@@ -32,7 +36,7 @@ my($uricCheat) = __PACKAGE__->uric_set;
 $uricCheat =~ tr/://d;
 
 # Identifying characters accidentally picked up with a URI.
-my($cruftSet) = q{]),.'";}; #'#
+my($cruftSet) = q{])\},.'";}; #'#
 
 
 =head1 NAME
@@ -49,10 +53,10 @@ URI::Find - Find URIs in arbitrary text
 
 =head1 DESCRIPTION
 
-This module does one thing: Finds URIs and URLs in plain text.  It finds
-them quickly and it finds them B<all> (or what URI::URL considers a URI
-to be.)  It only finds URIs which include a scheme (http:// or the
-like), for something a bit less strict have a look at
+This module does one thing: Finds URIs and URLs in plain text.  It
+finds them quickly and it finds them B<all> (or what URI.pm considers
+a URI to be.)  It only finds URIs which include a scheme (http:// or
+the like), for something a bit less strict have a look at
 L<URI::Find::Schemeless|URI::Find::Schemeless>.
 
 For a command-line interface, L<urifind> is provided.
@@ -68,10 +72,9 @@ For a command-line interface, L<urifind> is provided.
 Creates a new URI::Find object.
 
 &callback is a function which is called on each URI found.  It is
-passed two arguments, the first is a URI::URL object representing the
-URI found.  The second is the original text of the URI found.  The
-return value of the callback will replace the original URI in the
-text.
+passed two arguments, the first is a URI object representing the URI
+found.  The second is the original text of the URI found.  The return
+value of the callback will replace the original URI in the text.
 
 =cut
 
@@ -120,7 +123,7 @@ sub find {
     $self->{_uris_found} = 0;
 
     # Yes, evil.  Basically, look for something vaguely resembling a URL,
-    # then hand it off to URI::URL for examination.  If it passes, throw
+    # then hand it off to URI for examination.  If it passes, throw
     # it to a callback and put the result in its place.
     local $SIG{__DIE__} = 'DEFAULT';
     my $uri_cand;
@@ -310,6 +313,14 @@ This method takes a candidate URI and strips off any cruft it finds.
 
 =cut
 
+my %balanced_cruft = (
+    '('         => ')',
+    '{'         => '}',
+    '['         => ']',
+    '"'         => '"',
+    q[']        => q['],
+);
+
 sub decruft {
     @_ == 2 || __PACKAGE__->badinvo;
     my($self, $orig_match) = @_;
@@ -326,11 +337,8 @@ sub decruft {
             $cruft =~ s/^;//;
         }
 
-        my $opening = $orig_match =~ tr/(/(/;
-        my $closing = $orig_match =~ tr/)/)/;
-        if ( $cruft =~ /\)$/ && $opening == ( $closing + 1 ) ) {
-            $orig_match .= ')';
-            $cruft =~ s/\)$//;
+        while( my($open, $close) = each %balanced_cruft ) {
+            $self->recruft_balanced(\$orig_match, \$cruft, $open, $close);
         }
 
         $self->{end_cruft} = $cruft if $cruft;
@@ -338,6 +346,23 @@ sub decruft {
 
     return $orig_match;
 }
+
+
+sub recruft_balanced {
+    my $self = shift;
+    my($orig_match, $cruft, $open, $close) = @_;
+
+    my $open_count  = () = $$orig_match =~ m{\Q$open}g;
+    my $close_count = () = $$orig_match =~ m{\Q$close}g;
+
+    if ( $$cruft =~ /\Q$close\E$/ && $open_count == ( $close_count + 1 ) ) {
+        $$orig_match .= $close;
+        $$cruft =~ s/\Q$close\E$//;
+    }
+
+    return;
+}
+
 
 =item B<recruft>
 
@@ -492,15 +517,18 @@ sub _is_uri {
       $uri =~ $self->schemeless_uri_re   and
       $uri !~ /^<?$schemeRe:/;
 
-    # Set strict to avoid bogus schemes
-    my $old_strict = URI::URL::strict(1);
-
     eval {
-        $uri = URI::URL->new($uri);
-    };
+        $uri = URI->new($uri);
 
-    # And restore it
-    URI::URL::strict($old_strict);
+        # Throw out anything with an invalid scheme.
+        my $has_invalid_scheme = $uri->isa("URI::_foreign") &&
+                                 $uri->scheme !~ $extraSchemesRe;
+
+        # Toss out things like http:// but keep file:///
+        my $is_empty = $uri =~ m{^$schemeRe://$};
+
+        undef $uri if $has_invalid_scheme || $is_empty;
+    };
 
     if($@ || !defined $uri) {   # leave everything untouched, its not a URI.
         return NO;
@@ -530,7 +558,7 @@ Darren Chamberlain wrote urifind.
 
 =head1 LICENSE
 
-Copyright 2000, 2009-2010 by Michael G Schwern E<lt>schwern@pobox.comE<gt>.
+Copyright 2000, 2009-2010, 2014, 2016 by Michael G Schwern E<lt>schwern@pobox.comE<gt>.
 
 This program is free software; you can redistribute it and/or 
 modify it under the same terms as Perl itself.
@@ -539,8 +567,7 @@ See F<http://www.perlfoundation.org/artistic_license_1_0>
 
 =head1 SEE ALSO
 
-L<urifind>, L<URI::Find::Schemeless>, L<URI::URL>, L<URI>,
-RFC 3986 Appendix C
+L<urifind>, L<URI::Find::Schemeless>, L<URI>, RFC 3986 Appendix C
 
 =cut
 

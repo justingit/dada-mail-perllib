@@ -1,6 +1,6 @@
 package Mail::DeliveryStatus::Report;
 
-our $VERSION = '1.527';
+our $VERSION = '1.543';
 $VERSION = eval $VERSION;
 
 use Mail::Header;
@@ -15,7 +15,7 @@ BEGIN { @ISA = qw(Mail::Header) };
 sub get {
   my $string = $_[0]->SUPER::get($_[1]);
   $string = q{} unless defined $string and length $string;
-  chomp $string;
+  $string =~ s/\s+$//s;
   return $string;
 }
 

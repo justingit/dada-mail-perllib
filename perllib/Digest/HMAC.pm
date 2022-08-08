@@ -1,5 +1,6 @@
 package Digest::HMAC;
-$VERSION = "1.01";
+our $VERSION = '1.04'; # VERSION
+our $AUTHORITY = 'cpan:ARODLAND'; # AUTHORITY
 
 use strict;
 
@@ -98,13 +99,26 @@ HMAC follow the common C<Digest::> interface, but the constructor
 takes the secret key and the name of some other simple C<Digest::>
 as argument.
 
+The hmac() and hmac_hex() functions and the Digest::HMAC->new() constructor
+takes an optional $blocksize argument as well.  The HMAC algorithm assumes the
+digester to hash by iterating a basic compression function on blocks of data
+and the $blocksize should match the byte-length of such blocks.
+
+The default $blocksize is 64 which is suitable for the MD5 and SHA-1 digest
+functions.  For stronger algorithms the blocksize probably needs to be
+increased.
+
 =head1 SEE ALSO
 
 L<Digest::HMAC_MD5>, L<Digest::HMAC_SHA1>
 
 RFC 2104
 
-=head1 AUTHORS
+=head1 MAINTAINER
+
+Andrew Rodland <arodland@cpan.org>
+
+=head1 ORIGINAL AUTHORS
 
 Graham Barr <gbarr@ti.com>, Gisle Aas <gisle@aas.no>
 

@@ -1,6 +1,4 @@
-# Date::Format $Id: //depot/TimeDate/lib/Date/Format.pm#9 $
-#
-# Copyright (c) 1995-1999 Graham Barr. All rights reserved. This program is free
+# Copyright (c) 1995-2009 Graham Barr. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 
@@ -10,7 +8,7 @@ use     strict;
 use     vars qw(@EXPORT @ISA $VERSION);
 require Exporter;
 
-$VERSION = "2.22";
+$VERSION = "2.24";
 @ISA     = qw(Exporter);
 @EXPORT  = qw(time2str strftime ctime asctime);
 
@@ -217,7 +215,7 @@ sub format_m { sprintf("%02d",$_[0]->[4] + 1) }
 sub format_M { sprintf("%02d",$_[0]->[1]) }
 sub format_q { sprintf("%01d",int($_[0]->[4] / 3) + 1) }
 sub format_s { 
-   $epoch = timegm(@{$_[0]}[0..5])
+   $epoch = timelocal(@{$_[0]}[0..5])
 	unless defined $epoch;
    sprintf("%d",$epoch) 
 }
@@ -236,7 +234,7 @@ sub format_Z {
 sub format_z {
  my $t = timelocal(@{$_[0]}[0..5]);
  my $o = defined $tzname ? tz_offset($tzname, $t) : tz_offset(undef,$t);
- sprintf("%+03d%02d", int($o / 3600), abs(int($o % 3600)));
+ sprintf("%+03d%02d", int($o / 3600), int(abs($o) % 3600) / 60);
 }
 
 sub format_c { &format_x . " " . &format_X }
@@ -324,17 +322,10 @@ conversion specification C<"%a %b %e %T %Y\n">
 
 =head1 MULTI-LANGUAGE SUPPORT
 
-Date::Format is capable of formating into several languages, these are
-English, French, German and Italian. Changing the language is done via
-a static method call, for example
+Date::Format is capable of formating into several languages by creating
+a language specific object and calling methods, see L<Date::Language>
 
-	Date::Format->language('German');
-
-will change the language in which all subsequent dates are formatted.
-
-This is only a first pass, I am considering changing this to be
-
-	$lang = Date::Language->new('German');
+	my $lang = Date::Language->new('German');
 	$lang->time2str("%a %b %e %T %Y\n", time);
 
 I am open to suggestions on this.
@@ -354,7 +345,7 @@ category of the program's locale.
 	%c	MM/DD/YY HH:MM:SS
 	%C 	ctime format: Sat Nov 19 21:05:57 1994
 	%d 	numeric day of the month, with leading zeros (eg 01..31)
-	%e 	numeric day of the month, without leading zeros (eg 1..31)
+	%e 	like %d, but a leading zero is replaced by a space (eg  1..32)
 	%D 	MM/DD/YY
 	%G	GPS week number (weeks since January 6, 1980)
 	%h 	month abbr
@@ -391,13 +382,19 @@ C<%d>, C<%e>, C<%H>, C<%I>, C<%j>, C<%k>, C<%l>, C<%m>, C<%M>, C<%q>,
 C<%y> and C<%Y> can be output in Roman numerals by prefixing the letter
 with C<O>, e.g. C<%OY> will output the year as roman numerals.
 
+=head1 LIMITATION
+
+The functions in this module are limited to the time range that can be
+represented by the time_t data type, i.e. 1901-12-13 20:45:53 GMT to
+2038-01-19 03:14:07 GMT.
+
 =head1 AUTHOR
 
 Graham Barr <gbarr@pobox.com>
 
 =head1 COPYRIGHT
 
-Copyright (c) 1995-1999 Graham Barr. All rights reserved. This program is free
+Copyright (c) 1995-2009 Graham Barr. This program is free
 software; you can redistribute it and/or modify it under the same terms
 as Perl itself.
 
