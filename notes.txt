@@ -1,0 +1,5 @@
+W sudo cpanm --force --pureperl --local-lib-contained ~/testlocallib CGI
+
+# remove, darwin-thread-multi-2level
+
+
