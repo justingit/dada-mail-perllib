@@ -1,5 +1,7 @@
 W sudo cpanm --force --pureperl --local-lib-contained ~/testlocallib CGI
 
+sudo cpanm -f -v --pp -L ~/perllib-dev Geo::IP::PurePerl
+
 # remove, darwin-thread-multi-2level
 
 
