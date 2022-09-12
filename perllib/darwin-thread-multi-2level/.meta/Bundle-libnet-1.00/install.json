@@ -1,1 +1,0 @@
-{"target":"Bundle::libnet","name":"Bundle::libnet","pathname":"G/GB/GBARR/Bundle-libnet-1.00.tar.gz","dist":"Bundle-libnet-1.00","version":"1.00","provides":{"Bundle::libnet":{"version":"1.00","file":"libnet.pm"}}}

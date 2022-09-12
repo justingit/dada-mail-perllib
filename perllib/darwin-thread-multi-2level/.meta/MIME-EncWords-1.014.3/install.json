@@ -1,1 +1,0 @@
-{"dist":"MIME-EncWords-1.014.3","name":"MIME::EncWords","pathname":"N/NE/NEZUMI/MIME-EncWords-1.014.3.tar.gz","provides":{"Encode::MIME::EncWords":{"file":"lib/Encode/MIME/EncWords.pm","version":"0.03"},"MIME::EncWords":{"version":"1.014003","file":"lib/MIME/EncWords.pm"}},"version":"1.014003","target":"MIME::EncWords"}

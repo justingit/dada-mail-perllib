@@ -1,1 +1,0 @@
-{"pathname":"G/GA/GAAS/MIME-Base64-Perl-1.00.tar.gz","provides":{"MIME::QuotedPrint::Perl":{"version":"1.00","file":"lib/MIME/QuotedPrint/Perl.pm"},"MIME::Base64::Perl":{"version":"1.00","file":"lib/MIME/Base64/Perl.pm"}},"dist":"MIME-Base64-Perl-1.00","target":"MIME::Base64::Perl","name":"MIME::Base64::Perl","version":"1.00"}
