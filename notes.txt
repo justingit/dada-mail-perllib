@@ -5,3 +5,12 @@ sudo cpanm -f -v --pp -L ~/perllib-dev Geo::IP::PurePerl
 # remove, darwin-thread-multi-2level
 
 
+
+https://stackoverflow.com/questions/5715878/perl-find-pure-perl-modules-only/5728729#5728729
+
+
+In the future, let's move to carton? 
+
+https://mojolicious.io/blog/2018/12/22/use-carton-for-your-mojolicious-app-deployment/
+
+https://metacpan.org/pod/Carton
